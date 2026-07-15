@@ -9,6 +9,7 @@ const CONFIG = {
   unlockUrl: "https://buy.stripe.com/dRm28t8i1aoU62E3gaasg03",
   offerDurationMs: 3 * 60 * 1000,
   lockDurationMs: 3 * 60 * 1000,
+  timerEpochMs: Date.UTC(2026, 6, 15, 0, 0, 0),
   openSlots: 13,
   totalSlots: 30,
 };
@@ -35,7 +36,6 @@ const offerStatus = document.querySelector("[data-offer-status]");
 const ctaLabel = document.querySelector("[data-cta-label]");
 
 let toastTimer;
-const cycleStartedAt = Date.now();
 let isLocked = false;
 
 function setText(key, value) {
@@ -70,7 +70,7 @@ function formatTime(ms) {
 
 function getOfferState() {
   const cycleLength = CONFIG.offerDurationMs + CONFIG.lockDurationMs;
-  const elapsed = (Date.now() - cycleStartedAt) % cycleLength;
+  const elapsed = ((Date.now() - CONFIG.timerEpochMs) % cycleLength + cycleLength) % cycleLength;
   const active = elapsed < CONFIG.offerDurationMs;
   const remaining = active ? CONFIG.offerDurationMs - elapsed : cycleLength - elapsed;
   const slotRatio = active ? remaining / CONFIG.offerDurationMs : 0;
