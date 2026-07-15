@@ -6,7 +6,7 @@ const CONFIG = {
   videos: 4,
   price: "CHF 8.-",
   oldPrice: "CHF 29.-",
-  unlockUrl: "https://t.me/+df8nvcSFeAM0MDBk",
+  unlockUrl: "https://buy.stripe.com/dRm28t8i1aoU62E3gaasg03",
   offerDurationMs: 3 * 60 * 1000,
   lockDurationMs: 3 * 60 * 1000,
   openSlots: 13,
@@ -58,7 +58,7 @@ function showToast(message) {
 }
 
 function isConfiguredUnlockUrl(url) {
-  return /^https:\/\/(t\.me|telegram\.me)\/.+/i.test(url);
+  return /^https:\/\/buy\.stripe\.com\/.+/i.test(url);
 }
 
 function formatTime(ms) {
