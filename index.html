@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jane Private Snap Story | Creator Paywall</title>
+    <meta
+      name="description"
+      content="Janes private Snap Story mit zensierter Preview, Videos, Bildern und Stripe-Unlock."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff5a7d'/%3E%3Cpath d='M22 30V24a10 10 0 0 1 20 0v6' fill='none' stroke='%2313070c' stroke-width='6' stroke-linecap='round'/%3E%3Crect x='18' y='28' width='28' height='24' rx='6' fill='%2313070c'/%3E%3C/svg%3E"
+    />
+    <link rel="preload" href="assets/creator-paywall-hero.png" as="image" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-bg" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Jane Private Snap Startseite">
+        <span class="brand-mark">J</span>
+        <span>Jane Snap</span>
+      </a>
+      <nav class="nav-actions" aria-label="Schnellzugriff">
+        <a href="#unlock">Unlock</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <div class="emote-row" aria-hidden="true">
+            <img src="assets/jane-fire.png" alt="" />
+            <img src="assets/jane-heart.png" alt="" />
+          </div>
+          <p class="eyebrow">Jane's Private Snap</p>
+          <h1 id="hero-title">Private Story ist gelockt.</h1>
+          <p class="lead">
+            Beim Unlock erhältst du direkt die Videos und Bilder und wirst zu Janes privater
+            Story hinzugefügt. Dort wird es sehr heiss.
+          </p>
+
+          <div class="unlock-strip" aria-label="Inhalt nach Freischaltung">
+            <span>🔥 <strong data-field="videos">4</strong> Videos</span>
+            <span>💛 <strong data-field="photos">3</strong> Bilder</span>
+            <span>👻 Snap</span>
+          </div>
+
+          <div class="offer-panel" data-offer-panel aria-label="Aktionsfenster">
+            <div class="offer-timer">
+              <span data-offer-label>Angebot aktiv</span>
+              <strong data-countdown>03:00</strong>
+              <small data-offer-status>Aktionsfenster laeuft</small>
+            </div>
+            <div class="offer-slots">
+              <span>Plätze frei</span>
+              <strong><span data-slots>13</span>/<span data-total-slots>30</span></strong>
+              <div class="slot-bar" aria-hidden="true"><span data-slot-bar></span></div>
+            </div>
+          </div>
+
+          <div class="cta-row" id="unlock">
+            <button class="primary-cta" type="button" data-paylink data-unlock>
+              <span class="cta-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M7 10V8a5 5 0 0 1 9.6-2" />
+                  <rect x="5" y="10" width="14" height="10" rx="2" />
+                  <path d="M12 14v3" />
+                </svg>
+              </span>
+              <span data-cta-label>Jetzt freischalten</span>
+              <span class="price">
+                <span data-field="price">CHF 8.-</span>
+                <del data-field="oldPrice">CHF 29.-</del>
+              </span>
+            </button>
+            <p class="cta-note">Alles von Jane unzensiert sehen.</p>
+          </div>
+        </div>
+
+        <aside class="preview-stage" id="preview" aria-label="Gesperrte Jane Snap Story Preview">
+          <img class="jane-hero" src="assets/jane-camera.png" alt="Jane mit Kamera" />
+          <div class="phone-shell">
+            <div class="phone-top">
+              <div>
+                <span class="status-dot"></span>
+                <strong data-field="displayName">Jane</strong>
+              </div>
+              <span>Story</span>
+            </div>
+
+            <div class="teaser-grid" aria-label="Zensierte Story Preview">
+              <button
+                class="media-tile tile-large"
+                type="button"
+                data-paylink
+                aria-label="Gesperrtes Bild freischalten"
+              >
+                <span class="media-label">Bild 01</span>
+                <span class="lock-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="5" y="11" width="14" height="9" rx="2" />
+                    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                  </svg>
+                </span>
+              </button>
+              <button
+                class="media-tile tile-video"
+                type="button"
+                data-paylink
+                aria-label="Gesperrtes Video freischalten"
+              >
+                <span class="play-chip">Video</span>
+              </button>
+              <button class="media-tile" type="button" data-paylink aria-label="Gesperrtes Video freischalten">
+                <span class="media-label">Video</span>
+              </button>
+              <button class="media-tile" type="button" data-paylink aria-label="Gesperrtes Bild freischalten">
+                <span class="media-label">Bild</span>
+              </button>
+            </div>
+
+            <button class="account-card" type="button" data-paylink>
+              <p>Account-Zugang</p>
+              <div class="blurred-line">
+                <span>Snap</span>
+                <strong data-field="snap">jane.onlyvip</strong>
+              </div>
+              <div class="blurred-line">
+                <span>User</span>
+                <strong data-field="handle">@jane.private</strong>
+              </div>
+            </button>
+          </div>
+        </aside>
+      </section>
+
+      <section class="details" aria-label="Was wird freigeschaltet">
+        <article class="detail-item">
+          <span>01</span>
+          <h2>3 Bilder</h2>
+          <p>Direkt nach dem Unlock sichtbar.</p>
+        </article>
+        <article class="detail-item">
+          <span>02</span>
+          <h2>4 Videos</h2>
+          <p>Du erhältst alle Clips sofort.</p>
+        </article>
+        <article class="detail-item">
+          <span>03</span>
+          <h2>Snap</h2>
+          <p>Du kommst in ihre private Story.</p>
+        </article>
+      </section>
+    </main>
+
+    <div class="toast" data-toast role="status" aria-live="polite"></div>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
