@@ -389,7 +389,7 @@ h1 {
   border-radius: 14px;
   background:
     linear-gradient(180deg, rgba(16, 16, 16, 0), rgba(16, 16, 16, 0.84)),
-    url("assets/creator-paywall-hero.png") center / cover no-repeat;
+    url("assets/jane-story-hero.png") center / cover no-repeat;
   cursor: pointer;
 }
 

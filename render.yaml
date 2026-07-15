@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: jane-snap-paywall
+    name: jane-snap-private-story
     runtime: static
     buildCommand: echo "Static site ready"
     staticPublishPath: .

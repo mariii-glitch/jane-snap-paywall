@@ -6,7 +6,7 @@ const CONFIG = {
   videos: 4,
   price: "CHF 8.-",
   oldPrice: "CHF 29.-",
-  stripeCheckoutUrl: "https://buy.stripe.com/DEIN-STRIPE-LINK-HIER",
+  unlockUrl: "https://t.me/+df8nvcSFeAM0MDBk",
   offerDurationMs: 3 * 60 * 1000,
   lockDurationMs: 3 * 60 * 1000,
   openSlots: 13,
@@ -47,8 +47,8 @@ function showToast(message) {
   }, 3600);
 }
 
-function isConfiguredStripeUrl(url) {
-  return /^https:\/\/buy\.stripe\.com\/.+/i.test(url) && !url.includes("DEIN-STRIPE-LINK-HIER");
+function isConfiguredUnlockUrl(url) {
+  return /^https:\/\/(t\.me|telegram\.me)\/.+/i.test(url);
 }
 
 function formatTime(ms) {
@@ -92,18 +92,18 @@ function updateOfferState() {
   ctaLabel.textContent = "Verpasst";
 }
 
-function goToCheckout() {
+function goToUnlock() {
   if (isLocked) {
     showToast("Zu spät. Dieses Fenster ist vorbei und alle Plätze sind belegt.");
     return;
   }
 
-  if (isConfiguredStripeUrl(CONFIG.stripeCheckoutUrl)) {
-    window.location.href = CONFIG.stripeCheckoutUrl;
+  if (isConfiguredUnlockUrl(CONFIG.unlockUrl)) {
+    window.location.href = CONFIG.unlockUrl;
     return;
   }
 
-  showToast("Stripe-Link noch in app.js eintragen. Danach führt jeder gesperrte Bereich direkt zum Checkout.");
+  showToast("Unlock-Link noch in app.js eintragen. Danach führt jeder gesperrte Bereich direkt weiter.");
 }
 
 Object.entries(CONFIG).forEach(([key, value]) => setText(key, value));
@@ -111,5 +111,5 @@ updateOfferState();
 window.setInterval(updateOfferState, 250);
 
 payTargets.forEach((target) => {
-  target.addEventListener("click", goToCheckout);
+  target.addEventListener("click", goToUnlock);
 });
