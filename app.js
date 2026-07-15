@@ -13,6 +13,16 @@ const CONFIG = {
   totalSlots: 30,
 };
 
+const CANONICAL_RENDER_HOST = "jane-snap-private-story.onrender.com";
+
+if (
+  window.location.hostname.endsWith(".onrender.com") &&
+  window.location.hostname.startsWith("jane-snap-") &&
+  window.location.hostname !== CANONICAL_RENDER_HOST
+) {
+  window.location.replace(`https://${CANONICAL_RENDER_HOST}${window.location.pathname}${window.location.search}${window.location.hash}`);
+}
+
 const fields = document.querySelectorAll("[data-field]");
 const payTargets = document.querySelectorAll("[data-paylink]");
 const toast = document.querySelector("[data-toast]");
