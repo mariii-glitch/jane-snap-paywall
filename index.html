@@ -188,8 +188,58 @@
       </section>
     </main>
 
+    <section class="admin-panel" data-admin-panel hidden aria-label="Versteckter Timer Admin">
+      <div class="admin-shell">
+        <div class="admin-head">
+          <div>
+            <span>Timer Admin</span>
+            <strong>Regeln einstellen</strong>
+          </div>
+          <button class="admin-icon-button" type="button" data-admin-close aria-label="Admin schliessen">X</button>
+        </div>
+
+        <form class="admin-form" data-admin-form>
+          <label>
+            <span>Offen</span>
+            <input type="number" min="0.5" max="60" step="0.5" data-admin-input="offerMinutes" />
+            <small>Minuten sichtbar</small>
+          </label>
+          <label>
+            <span>Geschlossen</span>
+            <input type="number" min="0.5" max="60" step="0.5" data-admin-input="lockMinutes" />
+            <small>Minuten verpasst</small>
+          </label>
+          <label>
+            <span>Freie Plätze</span>
+            <input type="number" min="1" max="999" step="1" data-admin-input="openSlots" />
+            <small>Startwert im offenen Fenster</small>
+          </label>
+          <label>
+            <span>Total Plätze</span>
+            <input type="number" min="1" max="999" step="1" data-admin-input="totalSlots" />
+            <small>Anzeige rechts vom Slash</small>
+          </label>
+          <label class="admin-wide">
+            <span>Zyklus startet</span>
+            <input type="datetime-local" data-admin-input="timerEpoch" />
+            <small>Dieser Zeitanker läuft weiter, auch wenn Telegram geschlossen wird.</small>
+          </label>
+
+          <div class="admin-actions">
+            <button type="button" data-admin-now>Jetzt starten</button>
+            <button type="submit">Vorschau anwenden</button>
+            <button type="button" data-admin-copy>Link kopieren</button>
+            <button type="button" data-admin-reset>Reset</button>
+          </div>
+
+          <input class="admin-link-output" type="text" data-admin-link readonly aria-label="Generierter Kampagnenlink" />
+          <p class="admin-status" data-admin-status>Nur du siehst diesen Bereich.</p>
+        </form>
+      </div>
+    </section>
+
     <div class="toast" data-toast role="status" aria-live="polite"></div>
 
-    <script src="app.js?v=wall-clock-timer" defer></script>
+    <script src="app.js?v=timer-admin" defer></script>
   </body>
 </html>
