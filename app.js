@@ -12,11 +12,14 @@ const DEFAULT_CONFIG = Object.freeze({
   timerEpochMs: Date.UTC(2026, 6, 15, 0, 0, 0),
   openSlots: 13,
   totalSlots: 30,
+  manualLock: false,
 });
 
 const CONFIG = { ...DEFAULT_CONFIG };
 const CAMPAIGN_PARAM = "cfg";
 const ADMIN_STORAGE_KEY = "janeTimerAdminRules";
+const ADMIN_PASSWORD = "123s";
+const TELEGRAM_WAITLIST_URL = "https://t.me/+df8nvcSFeAM0MDBk";
 
 const CANONICAL_RENDER_HOST = "jane-snap-private-story.onrender.com";
 
@@ -38,14 +41,28 @@ const slotBar = document.querySelector("[data-slot-bar]");
 const offerLabel = document.querySelector("[data-offer-label]");
 const offerStatus = document.querySelector("[data-offer-status]");
 const ctaLabel = document.querySelector("[data-cta-label]");
+const waitlist = document.querySelector("[data-waitlist]");
+const waitlistLink = document.querySelector("[data-waitlist-link]");
+const adminGate = document.querySelector("[data-admin-gate]");
+const adminGateForm = document.querySelector("[data-admin-gate-form]");
+const adminGateClose = document.querySelector("[data-admin-gate-close]");
+const adminGateSubmit = document.querySelector("[data-admin-gate-submit]");
+const adminPasswordInput = document.querySelector("[data-admin-password]");
+const adminGateStatus = document.querySelector("[data-admin-gate-status]");
 const adminPanel = document.querySelector("[data-admin-panel]");
 const adminForm = document.querySelector("[data-admin-form]");
 const adminClose = document.querySelector("[data-admin-close]");
 const adminNow = document.querySelector("[data-admin-now]");
+const adminUnlockNow = document.querySelector("[data-admin-unlock-now]");
+const adminLockNow = document.querySelector("[data-admin-lock-now]");
+const adminHoldLock = document.querySelector("[data-admin-hold-lock]");
 const adminCopy = document.querySelector("[data-admin-copy]");
 const adminReset = document.querySelector("[data-admin-reset]");
+const adminTriggers = document.querySelectorAll("[data-admin-trigger]");
+const adminTapTriggers = document.querySelectorAll("[data-admin-tap-trigger]");
 const adminLinkOutput = document.querySelector("[data-admin-link]");
 const adminStatus = document.querySelector("[data-admin-status]");
+const adminModeStatus = document.querySelector("[data-admin-mode-status]");
 const adminInputs = {
   offerMinutes: document.querySelector('[data-admin-input="offerMinutes"]'),
   lockMinutes: document.querySelector('[data-admin-input="lockMinutes"]'),
@@ -53,10 +70,18 @@ const adminInputs = {
   totalSlots: document.querySelector('[data-admin-input="totalSlots"]'),
   timerEpoch: document.querySelector('[data-admin-input="timerEpoch"]'),
 };
-const isAdminMode = new URLSearchParams(window.location.search).get("admin") === "timer" || window.location.hash === "#admin";
+const normalizedPath = window.location.pathname.replace(/\/+$/, "");
+const isAdminMode =
+  new URLSearchParams(window.location.search).get("admin") === "timer" ||
+  window.location.hash === "#admin" ||
+  normalizedPath.endsWith("/admin") ||
+  normalizedPath.endsWith("/admin.html");
 
 let toastTimer;
 let isLocked = false;
+let adminPanelReady = false;
+let adminTapCount = 0;
+let adminTapTimer;
 
 function setText(key, value) {
   fields.forEach((field) => {
@@ -97,6 +122,7 @@ function normalizeTimerRules(rawRules) {
   const totalSlots = clampInteger(Number(rawRules.totalSlots), 1, 999);
   const openSlots = clampInteger(Number(rawRules.openSlots), 1, totalSlots);
   const timerEpochMs = Number(rawRules.timerEpochMs);
+  const manualLock = rawRules.manualLock === true;
 
   if (![offerDurationMs, lockDurationMs, totalSlots, openSlots, timerEpochMs].every(Number.isFinite)) {
     return null;
@@ -108,6 +134,7 @@ function normalizeTimerRules(rawRules) {
     timerEpochMs,
     openSlots,
     totalSlots,
+    manualLock,
   };
 }
 
@@ -159,6 +186,7 @@ function getCurrentTimerRules() {
     timerEpochMs: CONFIG.timerEpochMs,
     openSlots: CONFIG.openSlots,
     totalSlots: CONFIG.totalSlots,
+    manualLock: CONFIG.manualLock,
   };
 }
 
@@ -172,7 +200,7 @@ function toLocalDateTimeValue(timestamp) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-function readAdminFormRules() {
+function readAdminFormRules(overrides = {}) {
   const timerEpoch = new Date(adminInputs.timerEpoch?.value || "").getTime();
   return normalizeTimerRules({
     offerDurationMs: Number(adminInputs.offerMinutes?.value) * 60 * 1000,
@@ -180,6 +208,8 @@ function readAdminFormRules() {
     timerEpochMs: timerEpoch,
     openSlots: Number(adminInputs.openSlots?.value),
     totalSlots: Number(adminInputs.totalSlots?.value),
+    manualLock: CONFIG.manualLock,
+    ...overrides,
   });
 }
 
@@ -210,7 +240,17 @@ function updateAdminForm() {
   adminInputs.openSlots.value = CONFIG.openSlots;
   adminInputs.totalSlots.value = CONFIG.totalSlots;
   adminInputs.timerEpoch.value = toLocalDateTimeValue(CONFIG.timerEpochMs);
+  updateAdminModeStatus();
   updateGeneratedLink();
+}
+
+function updateAdminModeStatus() {
+  if (!adminModeStatus) return;
+
+  adminModeStatus.textContent = CONFIG.manualLock
+    ? "Dauerhaft gesperrt: bleibt zu, bis du wieder einschaltest."
+    : "Automatik aktiv: Timer öffnet und sperrt im Loop.";
+  adminModeStatus.classList.toggle("is-manual-lock", CONFIG.manualLock);
 }
 
 function applyTimerRules(rules) {
@@ -220,6 +260,17 @@ function applyTimerRules(rules) {
   Object.assign(CONFIG, normalizedRules);
   updateOfferState();
   updateAdminForm();
+  return true;
+}
+
+function applyAndStoreTimerRules(rules, message) {
+  if (!applyTimerRules(rules)) {
+    setAdminStatus("Bitte gültige Werte eintragen.");
+    return false;
+  }
+
+  storeAdminRules(getCurrentTimerRules());
+  setAdminStatus(message);
   return true;
 }
 
@@ -240,6 +291,120 @@ function copyText(value) {
   return Promise.resolve();
 }
 
+function openAdminPanel(message = "Timer Admin geöffnet.") {
+  if (!adminPanel) return;
+
+  const storedRules = readStoredAdminRules();
+  if (storedRules) {
+    applyTimerRules(storedRules);
+  }
+
+  adminPanel.hidden = false;
+  if (adminGate) {
+    adminGate.hidden = true;
+  }
+  updateAdminForm();
+  setAdminStatus(message);
+}
+
+function setAdminGateStatus(message) {
+  if (adminGateStatus) {
+    adminGateStatus.textContent = message;
+  }
+}
+
+function openAdminGate() {
+  if (!adminGate) return;
+
+  adminGate.hidden = false;
+  setAdminGateStatus("Passwort eingeben.");
+
+  if (adminPasswordInput) {
+    adminPasswordInput.value = "";
+    window.setTimeout(() => adminPasswordInput.focus(), 50);
+  }
+}
+
+function registerAdminTap(event) {
+  event?.preventDefault();
+  event?.stopPropagation();
+
+  adminTapCount += 1;
+  clearTimeout(adminTapTimer);
+
+  if (adminTapCount >= 4) {
+    adminTapCount = 0;
+    openAdminGate();
+    return;
+  }
+
+  adminTapTimer = window.setTimeout(() => {
+    adminTapCount = 0;
+  }, 1200);
+}
+
+function closeAdminGate() {
+  if (adminGate) {
+    adminGate.hidden = true;
+  }
+}
+
+function requestAdminAccess(event) {
+  event?.preventDefault();
+  event?.stopPropagation();
+  openAdminGate();
+}
+
+function submitAdminPassword(event) {
+  event.preventDefault();
+
+  const password = adminPasswordInput?.value || "";
+
+  if (password.trim().toLowerCase() === ADMIN_PASSWORD) {
+    openAdminPanel("Admin geöffnet. Du kannst jetzt Status, Timer und Link steuern.");
+    return;
+  }
+
+  setAdminGateStatus("Falsches Passwort.");
+  adminPasswordInput?.select();
+}
+
+function setTimerWindow(active) {
+  const rules = readAdminFormRules() || getCurrentTimerRules();
+  const timerEpochMs = Date.now() - (active ? 0 : rules.offerDurationMs);
+  const nextRules = normalizeTimerRules({ ...rules, timerEpochMs, manualLock: false });
+
+  if (!nextRules) {
+    setAdminStatus("Bitte gültige Werte eintragen.");
+    return;
+  }
+
+  applyAndStoreTimerRules(
+    nextRules,
+    active
+      ? "Wieder eingeschaltet. Das offene Fenster läuft ab jetzt weiter."
+      : "Kurz gesperrt. Das geschlossene Fenster läuft ab jetzt weiter."
+  );
+}
+
+function setManualLock(enabled) {
+  const rules = readAdminFormRules() || getCurrentTimerRules();
+  const timerEpochMs = Date.now() - (enabled ? rules.offerDurationMs : 0);
+  const nextRules = normalizeTimerRules({ ...rules, timerEpochMs, manualLock: enabled });
+
+  if (!nextRules) {
+    setAdminStatus("Bitte gültige Werte eintragen.");
+    return;
+  }
+
+  applyAndStoreTimerRules(
+    nextRules,
+    enabled
+      ? "Dauerhaft gesperrt. Bleibt zu, bis du wieder einschaltest."
+      : "Wieder eingeschaltet. Das offene Fenster läuft ab jetzt weiter."
+  );
+}
+
 function formatTime(ms) {
   const seconds = Math.max(0, Math.ceil(ms / 1000));
   const minutes = Math.floor(seconds / 60).toString().padStart(2, "0");
@@ -248,6 +413,16 @@ function formatTime(ms) {
 }
 
 function getOfferState() {
+  if (CONFIG.manualLock) {
+    return {
+      active: false,
+      manualLock: true,
+      remaining: 0,
+      remainingSlots: 0,
+      slotRatio: 0,
+    };
+  }
+
   const cycleLength = CONFIG.offerDurationMs + CONFIG.lockDurationMs;
   const elapsed = ((Date.now() - CONFIG.timerEpochMs) % cycleLength + cycleLength) % cycleLength;
   const active = elapsed < CONFIG.offerDurationMs;
@@ -255,7 +430,7 @@ function getOfferState() {
   const slotRatio = active ? remaining / CONFIG.offerDurationMs : 0;
   const remainingSlots = active ? Math.max(1, Math.ceil(CONFIG.openSlots * slotRatio)) : 0;
 
-  return { active, remaining, remainingSlots, slotRatio };
+  return { active, manualLock: false, remaining, remainingSlots, slotRatio };
 }
 
 function updateOfferState() {
@@ -263,27 +438,35 @@ function updateOfferState() {
   isLocked = !state.active;
 
   document.body.classList.toggle("is-offer-locked", isLocked);
+  document.body.classList.toggle("is-manual-lock", state.manualLock);
   slots.textContent = state.remainingSlots;
   totalSlots.textContent = CONFIG.totalSlots;
   slotBar.style.width = `${Math.max(0, Math.min(1, state.slotRatio)) * 100}%`;
+  if (waitlist) {
+    waitlist.hidden = !isLocked;
+  }
 
   if (state.active) {
     offerLabel.textContent = "Angebot aktiv";
     countdown.textContent = formatTime(state.remaining);
-    offerStatus.textContent = "Aktionsfenster läuft";
+    offerStatus.textContent = "Nur jetzt offen";
     ctaLabel.textContent = "Jetzt freischalten";
     return;
   }
 
-  offerLabel.textContent = "Zu spät";
-  countdown.textContent = "Verpasst";
-  offerStatus.textContent = "Alle Plätze im aktuellen Fenster belegt";
-  ctaLabel.textContent = "Verpasst";
+  offerLabel.textContent = state.manualLock ? "Geschlossen" : "Zu spät";
+  countdown.textContent = state.manualLock ? "Gesperrt" : "Verpasst";
+  offerStatus.textContent = state.manualLock ? "Neue Plätze per Telegram" : "Alle Plätze gerade belegt";
+  ctaLabel.textContent = state.manualLock ? "Geschlossen" : "Verpasst";
+}
+
+function finishBoot() {
+  document.body.classList.remove("is-booting");
 }
 
 function goToUnlock() {
   if (isLocked) {
-    showToast("Zu spät. Dieses Fenster ist vorbei und alle Plätze sind belegt.");
+    showToast("Gerade geschlossen. Tritt Telegram bei und erfahre neue Plätze zuerst.");
     return;
   }
 
@@ -296,11 +479,10 @@ function goToUnlock() {
 }
 
 function setupAdminPanel() {
-  if (!adminPanel || !isAdminMode) return;
+  if (!adminPanel || adminPanelReady) return;
 
-  adminPanel.hidden = false;
+  adminPanelReady = true;
   updateAdminForm();
-  setAdminStatus("Versteckter Admin aktiv. Änderungen sind erst öffentlich, wenn du den generierten Link teilst.");
 
   adminForm?.addEventListener("input", updateGeneratedLink);
 
@@ -325,6 +507,18 @@ function setupAdminPanel() {
     }
   });
 
+  adminUnlockNow?.addEventListener("click", () => {
+    setManualLock(false);
+  });
+
+  adminLockNow?.addEventListener("click", () => {
+    setTimerWindow(false);
+  });
+
+  adminHoldLock?.addEventListener("click", () => {
+    setManualLock(true);
+  });
+
   adminCopy?.addEventListener("click", () => {
     const rules = readAdminFormRules();
     if (!rules) {
@@ -345,21 +539,54 @@ function setupAdminPanel() {
     }
 
     applyTimerRules(DEFAULT_CONFIG);
+    storeAdminRules(DEFAULT_CONFIG);
     setAdminStatus("Timer-Regeln auf Standard zurückgesetzt.");
   });
 
   adminClose?.addEventListener("click", () => {
     adminPanel.hidden = true;
   });
+
+  adminGateForm?.addEventListener("submit", submitAdminPassword);
+  adminGateSubmit?.addEventListener("click", submitAdminPassword);
+  adminGateClose?.addEventListener("click", closeAdminGate);
+  adminGate?.addEventListener("click", (event) => {
+    if (event.target === adminGate) {
+      closeAdminGate();
+    }
+  });
+
+  adminTriggers.forEach((trigger) => {
+    trigger.addEventListener("click", requestAdminAccess);
+    trigger.addEventListener("touchstart", requestAdminAccess, { passive: false });
+    trigger.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        requestAdminAccess(event);
+      }
+    });
+  });
+
+  adminTapTriggers.forEach((trigger) => {
+    trigger.addEventListener("click", registerAdminTap);
+    trigger.addEventListener("touchstart", registerAdminTap, { passive: false });
+  });
+
+  if (isAdminMode) {
+    openAdminGate();
+  }
 }
 
-const initialRules = readCampaignRules() || (isAdminMode ? readStoredAdminRules() : null);
+const initialRules = readCampaignRules() || readStoredAdminRules();
 if (initialRules) {
   applyTimerRules(initialRules);
 }
 
 Object.entries(CONFIG).forEach(([key, value]) => setText(key, value));
+if (waitlistLink) {
+  waitlistLink.href = TELEGRAM_WAITLIST_URL;
+}
 updateOfferState();
+finishBoot();
 window.setInterval(updateOfferState, 250);
 setupAdminPanel();
 

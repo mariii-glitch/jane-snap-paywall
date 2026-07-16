@@ -6,6 +6,12 @@ services:
     staticPublishPath: .
     routes:
       - type: rewrite
+        source: /admin
+        destination: /index.html
+      - type: rewrite
+        source: /admin/
+        destination: /index.html
+      - type: rewrite
         source: /*
         destination: /index.html
     headers:
