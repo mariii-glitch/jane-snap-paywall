@@ -860,6 +860,7 @@ h1 {
 }
 
 .admin-actions [data-admin-unlock-now],
+.admin-actions [data-admin-apply-clean],
 .admin-actions button[type="submit"] {
   background: var(--snap);
   color: var(--black);
@@ -876,7 +877,7 @@ h1 {
 }
 
 .admin-actions-link {
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
 }
 
 .admin-link-output {
@@ -1079,6 +1080,9 @@ h1 {
     grid-template-columns: 1fr;
   }
 
+  .admin-actions-link {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

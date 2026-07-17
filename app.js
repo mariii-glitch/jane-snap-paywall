@@ -57,6 +57,7 @@ const adminUnlockNow = document.querySelector("[data-admin-unlock-now]");
 const adminLockNow = document.querySelector("[data-admin-lock-now]");
 const adminHoldLock = document.querySelector("[data-admin-hold-lock]");
 const adminCopy = document.querySelector("[data-admin-copy]");
+const adminApplyClean = document.querySelector("[data-admin-apply-clean]");
 const adminReset = document.querySelector("[data-admin-reset]");
 const adminLinkOutput = document.querySelector("[data-admin-link]");
 const adminStatus = document.querySelector("[data-admin-status]");
@@ -212,6 +213,14 @@ function buildCampaignUrl(rules) {
   const url = new URL(`https://${CANONICAL_RENDER_HOST}/`);
   url.searchParams.set(CAMPAIGN_PARAM, encodeTimerRules(rules));
   return url.toString();
+}
+
+function buildCleanPublicUrl() {
+  if (window.location.protocol === "file:" || ["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+    return new URL("index.html", window.location.href).toString();
+  }
+
+  return `https://${CANONICAL_RENDER_HOST}/`;
 }
 
 function setAdminStatus(message) {
@@ -376,6 +385,22 @@ function setManualLock(enabled) {
   );
 }
 
+function applyRulesAndOpenCleanLink() {
+  const rules = readAdminFormRules();
+  if (!rules) {
+    setAdminStatus("Bitte gültige Werte eintragen.");
+    return;
+  }
+
+  if (!applyAndStoreTimerRules(rules, "Gespeichert. Öffne jetzt den normalen Link ohne Admin.")) {
+    return;
+  }
+
+  window.setTimeout(() => {
+    window.location.replace(buildCleanPublicUrl());
+  }, 220);
+}
+
 function formatTime(ms) {
   const seconds = Math.max(0, Math.ceil(ms / 1000));
   const minutes = Math.floor(seconds / 60).toString().padStart(2, "0");
@@ -501,6 +526,8 @@ function setupAdminPanel() {
     adminLinkOutput.value = url;
     copyText(url).then(() => setAdminStatus("Kampagnenlink kopiert. Diesen Link kannst du teilen oder shorten."));
   });
+
+  adminApplyClean?.addEventListener("click", applyRulesAndOpenCleanLink);
 
   adminReset?.addEventListener("click", () => {
     try {
