@@ -1,13 +1,12 @@
 services:
   - type: web
-    name: jane-snap-private-story
+    name: jane-snap-vip
     runtime: node
-    plan: free
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
-        value: 20.18.1
-      - key: HOST
-        value: 0.0.0.0
+        value: 20.19.0
+      - key: DATA_DIR
+        value: /var/data
