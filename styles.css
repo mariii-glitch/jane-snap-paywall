@@ -860,6 +860,7 @@ h1 {
 }
 
 .admin-actions [data-admin-unlock-now],
+.admin-actions [data-admin-apply-live],
 .admin-actions [data-admin-apply-clean],
 .admin-actions button[type="submit"] {
   background: var(--snap);
@@ -876,8 +877,13 @@ h1 {
   color: var(--black);
 }
 
+.admin-actions [data-admin-copy-home] {
+  background: #ffffff;
+  color: var(--black);
+}
+
 .admin-actions-link {
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .admin-link-output {

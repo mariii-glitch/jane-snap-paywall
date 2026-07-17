@@ -279,20 +279,22 @@
 
           <div class="admin-actions">
             <button type="button" data-admin-now>Timer ab jetzt</button>
-            <button type="submit">Regeln speichern</button>
+            <button type="submit">Vorschau speichern</button>
             <button type="button" data-admin-reset>Reset</button>
           </div>
 
           <div class="admin-section-title">
             <span>3</span>
-            <strong>Link nutzen</strong>
-            <small>Der Link enthält deine Timer-Regeln und kann geteilt oder gekürzt werden.</small>
+            <strong>Übernehmen</strong>
+            <small>Live anwenden startet das offene Fenster neu. Der Hauptseite-Link bleibt ohne Admin-Zusatz.</small>
           </div>
 
           <input class="admin-link-output" type="text" data-admin-link readonly aria-label="Generierter Kampagnenlink" />
           <div class="admin-actions admin-actions-link">
-            <button type="button" data-admin-apply-clean>Übernehmen & Seite öffnen</button>
-            <button type="button" data-admin-copy>Link kopieren</button>
+            <button type="button" data-admin-apply-live>Änderungen direkt live</button>
+            <button type="button" data-admin-copy-home>Hauptseite-Link speichern</button>
+            <button type="button" data-admin-apply-clean>Hauptseite öffnen</button>
+            <button type="button" data-admin-copy>Kampagnenlink kopieren</button>
           </div>
           <p class="admin-status" data-admin-status>Nur du siehst diesen Bereich.</p>
         </form>
@@ -301,6 +303,6 @@
 
     <div class="toast" data-toast role="status" aria-live="polite"></div>
 
-    <script src="app.js?v=admin-apply-clean" defer></script>
+    <script src="app.js?v=global-admin-config" defer></script>
   </body>
 </html>

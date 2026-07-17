@@ -20,6 +20,7 @@ const CAMPAIGN_PARAM = "cfg";
 const ADMIN_STORAGE_KEY = "janeTimerAdminRules";
 const ADMIN_PASSWORD = "123s";
 const TELEGRAM_WAITLIST_URL = "https://t.me/+df8nvcSFeAM0MDBk";
+const CONFIG_API_ENDPOINT = "/api/config";
 
 const CANONICAL_RENDER_HOST = "jane-snap-private-story.onrender.com";
 
@@ -57,7 +58,9 @@ const adminUnlockNow = document.querySelector("[data-admin-unlock-now]");
 const adminLockNow = document.querySelector("[data-admin-lock-now]");
 const adminHoldLock = document.querySelector("[data-admin-hold-lock]");
 const adminCopy = document.querySelector("[data-admin-copy]");
+const adminCopyHome = document.querySelector("[data-admin-copy-home]");
 const adminApplyClean = document.querySelector("[data-admin-apply-clean]");
+const adminApplyLive = document.querySelector("[data-admin-apply-live]");
 const adminReset = document.querySelector("[data-admin-reset]");
 const adminLinkOutput = document.querySelector("[data-admin-link]");
 const adminStatus = document.querySelector("[data-admin-status]");
@@ -78,6 +81,7 @@ const isAdminMode =
 let toastTimer;
 let isLocked = false;
 let adminPanelReady = false;
+let adminSessionPassword = "";
 
 function setText(key, value) {
   fields.forEach((field) => {
@@ -223,6 +227,66 @@ function buildCleanPublicUrl() {
   return `https://${CANONICAL_RENDER_HOST}/`;
 }
 
+function canUseConfigApi() {
+  return window.location.protocol === "http:" || window.location.protocol === "https:";
+}
+
+async function fetchConfigApi(path = CONFIG_API_ENDPOINT, options = {}) {
+  if (!canUseConfigApi()) return null;
+
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 1800);
+
+  try {
+    const response = await window.fetch(path, {
+      cache: "no-store",
+      ...options,
+      headers: {
+        Accept: "application/json",
+        ...(options.headers || {}),
+      },
+      signal: controller.signal,
+    });
+
+    if (!response.ok) return null;
+
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) return null;
+
+    return response.json();
+  } catch {
+    return null;
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+async function readGlobalRules() {
+  const payload = await fetchConfigApi();
+  return normalizeTimerRules(payload?.rules || payload);
+}
+
+async function publishGlobalRules(rules) {
+  const normalizedRules = normalizeTimerRules(rules);
+  if (!normalizedRules) return { saved: false, reason: "invalid" };
+
+  const payload = await fetchConfigApi(CONFIG_API_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      password: adminSessionPassword || ADMIN_PASSWORD,
+      rules: normalizedRules,
+    }),
+  });
+
+  const savedRules = normalizeTimerRules(payload?.rules);
+  if (!savedRules) return { saved: false, reason: payload?.error || "api-unavailable" };
+
+  return { saved: true, rules: savedRules };
+}
+
 function setAdminStatus(message) {
   if (adminStatus) {
     adminStatus.textContent = message;
@@ -341,6 +405,7 @@ function submitAdminPassword(event) {
   const password = adminPasswordInput?.value || "";
 
   if (password.trim().toLowerCase() === ADMIN_PASSWORD) {
+    adminSessionPassword = password.trim();
     openAdminPanel("Admin geöffnet. Du kannst jetzt Status, Timer und Link steuern.");
     return;
   }
@@ -396,9 +461,67 @@ function applyRulesAndOpenCleanLink() {
     return;
   }
 
+  publishGlobalRules(getCurrentTimerRules()).then((result) => {
+    if (!result.saved) {
+      setAdminStatus("Lokal gespeichert. Öffne den normalen Link ohne Admin.");
+    }
+  });
+
   window.setTimeout(() => {
     window.location.replace(buildCleanPublicUrl());
   }, 220);
+}
+
+async function applyRulesDirectlyLive() {
+  const nextRules = readAdminFormRules({
+    timerEpochMs: Date.now(),
+    manualLock: false,
+  });
+
+  if (!nextRules) {
+    setAdminStatus("Bitte gültige Werte eintragen.");
+    return;
+  }
+
+  if (!applyAndStoreTimerRules(nextRules, "Live übernommen. Das offene Fenster startet jetzt neu.")) {
+    return;
+  }
+
+  const result = await publishGlobalRules(getCurrentTimerRules());
+  setAdminStatus(
+    result.saved
+      ? `Live gespeichert: Besucher sehen jetzt ${CONFIG.openSlots}/${CONFIG.totalSlots} Plätze.`
+      : `Live auf deinem Gerät übernommen: ${CONFIG.openSlots}/${CONFIG.totalSlots} Plätze. Globale API noch nicht aktiv.`
+  );
+}
+
+async function copyHomeLinkAndSaveRules() {
+  const rules = readAdminFormRules();
+  if (!rules) {
+    setAdminStatus("Bitte gültige Werte eintragen.");
+    return;
+  }
+
+  if (!applyAndStoreTimerRules(rules, "Hauptseite-Link wird gespeichert.")) {
+    return;
+  }
+
+  const cleanUrl = buildCleanPublicUrl();
+  const result = await publishGlobalRules(getCurrentTimerRules());
+  if (adminLinkOutput) {
+    adminLinkOutput.value = cleanUrl;
+  }
+
+  try {
+    await copyText(cleanUrl);
+    setAdminStatus(
+      result.saved
+        ? "Hauptseite-Link kopiert und globale Einstellungen gespeichert."
+        : "Hauptseite-Link kopiert. Einstellungen sind auf deinem Gerät gespeichert."
+    );
+  } catch {
+    setAdminStatus(`Hauptseite-Link: ${cleanUrl}`);
+  }
 }
 
 function formatTime(ms) {
@@ -492,7 +615,7 @@ function setupAdminPanel() {
 
     applyTimerRules(rules);
     storeAdminRules(rules);
-    setAdminStatus("Vorschau gespeichert. Der Link unten enthält diese Regeln.");
+    setAdminStatus("Vorschau gespeichert. Nutze unten Live anwenden oder Link kopieren.");
   });
 
   adminNow?.addEventListener("click", () => {
@@ -527,6 +650,8 @@ function setupAdminPanel() {
     copyText(url).then(() => setAdminStatus("Kampagnenlink kopiert. Diesen Link kannst du teilen oder shorten."));
   });
 
+  adminApplyLive?.addEventListener("click", applyRulesDirectlyLive);
+  adminCopyHome?.addEventListener("click", copyHomeLinkAndSaveRules);
   adminApplyClean?.addEventListener("click", applyRulesAndOpenCleanLink);
 
   adminReset?.addEventListener("click", () => {
@@ -559,20 +684,28 @@ function setupAdminPanel() {
   }
 }
 
-const initialRules = readCampaignRules() || readStoredAdminRules();
-if (initialRules) {
-  applyTimerRules(initialRules);
+async function initializePage() {
+  const campaignRules = readCampaignRules();
+  const globalRules = campaignRules ? null : await readGlobalRules();
+  const initialRules = campaignRules || globalRules || readStoredAdminRules();
+
+  if (initialRules) {
+    applyTimerRules(initialRules);
+  }
+
+  Object.entries(CONFIG).forEach(([key, value]) => setText(key, value));
+  if (waitlistLink) {
+    waitlistLink.href = TELEGRAM_WAITLIST_URL;
+  }
+
+  updateOfferState();
+  finishBoot();
+  window.setInterval(updateOfferState, 250);
+  setupAdminPanel();
+
+  payTargets.forEach((target) => {
+    target.addEventListener("click", goToUnlock);
+  });
 }
 
-Object.entries(CONFIG).forEach(([key, value]) => setText(key, value));
-if (waitlistLink) {
-  waitlistLink.href = TELEGRAM_WAITLIST_URL;
-}
-updateOfferState();
-finishBoot();
-window.setInterval(updateOfferState, 250);
-setupAdminPanel();
-
-payTargets.forEach((target) => {
-  target.addEventListener("click", goToUnlock);
-});
+initializePage();
