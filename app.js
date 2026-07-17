@@ -1,12 +1,12 @@
 const DEFAULT_CONFIG = Object.freeze({
   displayName: "Jane",
-  handle: "@jane.private",
-  snap: "jane.onlyvip",
-  photos: 10,
-  videos: 8,
+  handle: "+41 76 *** ** **",
+  snap: "Jane Premium",
+  photos: 5,
+  videos: 3,
   price: "CHF 8.-",
   oldPrice: "CHF 29.-",
-  unlockUrl: "https://buy.stripe.com/8x2dRb0Pz54AgHi6smasg02",
+  unlockUrl: "https://buy.stripe.com/dRm28t8i1aoU62E3gaasg03",
   offerDurationMs: 3 * 60 * 1000,
   lockDurationMs: 3 * 60 * 1000,
   timerEpochMs: Date.UTC(2026, 6, 15, 0, 0, 0),
@@ -606,14 +606,14 @@ function updateOfferState() {
   if (state.active) {
     offerLabel.textContent = "Angebot aktiv";
     countdown.textContent = formatTime(state.remaining);
-    offerStatus.textContent = "Nur jetzt offen";
-    ctaLabel.textContent = "Jetzt freischalten";
+    offerStatus.textContent = "WhatsApp Premium offen";
+    ctaLabel.textContent = "WhatsApp Premium freischalten";
     return;
   }
 
   offerLabel.textContent = state.manualLock ? "Geschlossen" : "Zu spät";
   countdown.textContent = state.manualLock ? "Gesperrt" : "Verpasst";
-  offerStatus.textContent = state.manualLock ? "Neue Plätze per Telegram" : "Alle Plätze gerade belegt";
+  offerStatus.textContent = state.manualLock ? "Neue Plätze per Telegram" : "Alle Premium-Plätze belegt";
   ctaLabel.textContent = state.manualLock ? "Geschlossen" : "Verpasst";
 }
 
@@ -623,7 +623,7 @@ function finishBoot() {
 
 function goToUnlock() {
   if (isLocked) {
-    showToast("Gerade geschlossen. Tritt Telegram bei und erfahre neue Plätze zuerst.");
+    showToast("Gerade geschlossen. Tritt Telegram bei und erfahre neue WhatsApp-Plätze zuerst.");
     return;
   }
 
