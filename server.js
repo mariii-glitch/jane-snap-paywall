@@ -5,7 +5,7 @@ const path = require("node:path");
 const PORT = Number(process.env.PORT || 8183);
 const HOST = process.env.HOST || "0.0.0.0";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "123s";
-const CANONICAL_RENDER_HOST = "jane-snap-private-story.onrender.com";
+const CANONICAL_RENDER_HOST = "jane-whatsapp-premium-isolated.onrender.com";
 
 const DEFAULT_RULES = Object.freeze({
   offerDurationMs: 3 * 60 * 1000,
@@ -240,6 +240,14 @@ function serveStatic(request, response) {
 const server = http.createServer((request, response) => {
   const requestPath = (request.url || "/").split("?")[0];
 
+  if (requestPath === "/api/health") {
+    sendJson(response, 200, {
+      ok: true,
+      service: "jane-whatsapp-premium",
+    });
+    return;
+  }
+
   if (requestPath === "/api/config") {
     handleConfigApi(request, response);
     return;
@@ -249,5 +257,5 @@ const server = http.createServer((request, response) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`Jane Snap server listening on http://${HOST}:${PORT}`);
+  console.log(`Jane WhatsApp Premium server listening on http://${HOST}:${PORT}`);
 });
