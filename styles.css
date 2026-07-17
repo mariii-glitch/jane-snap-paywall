@@ -551,17 +551,6 @@ h1 {
   background: var(--card);
 }
 
-.detail-admin-card {
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: rgba(16, 16, 16, 0.14);
-}
-
-.detail-admin-card:focus-visible {
-  outline: 3px solid #ffffff;
-  outline-offset: 3px;
-}
-
 .detail-item span,
 .detail-number {
   display: inline-flex;
@@ -584,17 +573,6 @@ h1 {
   font-weight: 950;
   line-height: 1;
   cursor: default;
-}
-
-.detail-admin-trigger {
-  cursor: pointer;
-  min-width: 44px;
-  min-height: 44px;
-}
-
-.detail-admin-trigger:focus-visible {
-  outline: 3px solid var(--snap);
-  outline-offset: 4px;
 }
 
 .detail-item h2 {
@@ -901,22 +879,6 @@ h1 {
   grid-template-columns: 1fr;
 }
 
-.admin-mobile-zone {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  z-index: 20;
-  width: 78px;
-  height: 78px;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  opacity: 0;
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
 .admin-link-output {
   min-height: 42px;
   border: 2px dashed var(--black);
@@ -1117,10 +1079,6 @@ h1 {
     grid-template-columns: 1fr;
   }
 
-  .admin-mobile-zone {
-    width: 96px;
-    height: 96px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -58,8 +58,6 @@ const adminLockNow = document.querySelector("[data-admin-lock-now]");
 const adminHoldLock = document.querySelector("[data-admin-hold-lock]");
 const adminCopy = document.querySelector("[data-admin-copy]");
 const adminReset = document.querySelector("[data-admin-reset]");
-const adminTriggers = document.querySelectorAll("[data-admin-trigger]");
-const adminTapTriggers = document.querySelectorAll("[data-admin-tap-trigger]");
 const adminLinkOutput = document.querySelector("[data-admin-link]");
 const adminStatus = document.querySelector("[data-admin-status]");
 const adminModeStatus = document.querySelector("[data-admin-mode-status]");
@@ -73,15 +71,12 @@ const adminInputs = {
 const normalizedPath = window.location.pathname.replace(/\/+$/, "");
 const isAdminMode =
   new URLSearchParams(window.location.search).get("admin") === "timer" ||
-  window.location.hash === "#admin" ||
   normalizedPath.endsWith("/admin") ||
   normalizedPath.endsWith("/admin.html");
 
 let toastTimer;
 let isLocked = false;
 let adminPanelReady = false;
-let adminTapCount = 0;
-let adminTapTimer;
 
 function setText(key, value) {
   fields.forEach((field) => {
@@ -325,34 +320,10 @@ function openAdminGate() {
   }
 }
 
-function registerAdminTap(event) {
-  event?.preventDefault();
-  event?.stopPropagation();
-
-  adminTapCount += 1;
-  clearTimeout(adminTapTimer);
-
-  if (adminTapCount >= 4) {
-    adminTapCount = 0;
-    openAdminGate();
-    return;
-  }
-
-  adminTapTimer = window.setTimeout(() => {
-    adminTapCount = 0;
-  }, 1200);
-}
-
 function closeAdminGate() {
   if (adminGate) {
     adminGate.hidden = true;
   }
-}
-
-function requestAdminAccess(event) {
-  event?.preventDefault();
-  event?.stopPropagation();
-  openAdminGate();
 }
 
 function submitAdminPassword(event) {
@@ -554,21 +525,6 @@ function setupAdminPanel() {
     if (event.target === adminGate) {
       closeAdminGate();
     }
-  });
-
-  adminTriggers.forEach((trigger) => {
-    trigger.addEventListener("click", requestAdminAccess);
-    trigger.addEventListener("touchstart", requestAdminAccess, { passive: false });
-    trigger.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        requestAdminAccess(event);
-      }
-    });
-  });
-
-  adminTapTriggers.forEach((trigger) => {
-    trigger.addEventListener("click", registerAdminTap);
-    trigger.addEventListener("touchstart", registerAdminTap, { passive: false });
   });
 
   if (isAdminMode) {
