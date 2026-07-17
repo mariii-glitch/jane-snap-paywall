@@ -22,7 +22,7 @@ const ADMIN_PASSWORD = "123s";
 const TELEGRAM_WAITLIST_URL = "https://t.me/+df8nvcSFeAM0MDBk";
 const CONFIG_API_ENDPOINT = "/api/config";
 
-const CANONICAL_RENDER_HOST = "jane-snap-private-story.onrender.com";
+const CANONICAL_RENDER_HOST = "jane-snap-vip.onrender.com";
 
 if (
   window.location.hostname.endsWith(".onrender.com") &&
