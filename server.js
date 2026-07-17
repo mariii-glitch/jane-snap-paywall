@@ -240,6 +240,14 @@ function serveStatic(request, response) {
 const server = http.createServer((request, response) => {
   const requestPath = (request.url || "/").split("?")[0];
 
+  if (requestPath === "/api/health") {
+    sendJson(response, 200, {
+      ok: true,
+      service: "jane-whatsapp-premium",
+    });
+    return;
+  }
+
   if (requestPath === "/api/config") {
     handleConfigApi(request, response);
     return;
@@ -249,5 +257,5 @@ const server = http.createServer((request, response) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`Jane Snap server listening on http://${HOST}:${PORT}`);
+  console.log(`Jane WhatsApp Premium server listening on http://${HOST}:${PORT}`);
 });

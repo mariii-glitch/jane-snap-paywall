@@ -1,23 +1,13 @@
 services:
   - type: web
     name: jane-snap-private-story
-    runtime: static
-    buildCommand: echo "Static site ready"
-    staticPublishPath: .
-    routes:
-      - type: rewrite
-        source: /admin
-        destination: /index.html
-      - type: rewrite
-        source: /admin/
-        destination: /index.html
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    headers:
-      - path: /*
-        name: X-Frame-Options
-        value: DENY
-      - path: /*
-        name: X-Content-Type-Options
-        value: nosniff
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.1
+      - key: HOST
+        value: 0.0.0.0
