@@ -293,11 +293,15 @@ function setAdminStatus(message) {
   }
 }
 
-function updateGeneratedLink() {
-  if (!adminLinkOutput) return;
+function setAdminLinkValue(value) {
+  if (adminLinkOutput) {
+    adminLinkOutput.value = value;
+  }
+}
 
+function updateGeneratedLink() {
   const rules = readAdminFormRules() || getCurrentTimerRules();
-  adminLinkOutput.value = buildCampaignUrl(rules);
+  setAdminLinkValue(buildCampaignUrl(rules));
 }
 
 function updateAdminForm() {
@@ -342,21 +346,55 @@ function applyAndStoreTimerRules(rules, message) {
   return true;
 }
 
-function copyText(value) {
-  if (navigator.clipboard && window.isSecureContext) {
-    return navigator.clipboard.writeText(value);
+function fallbackCopyText(value) {
+  const target = adminLinkOutput || document.createElement("textarea");
+  const targetWasDetached = !target.parentNode;
+
+  if (targetWasDetached) {
+    target.value = value;
+    target.setAttribute("readonly", "");
+    target.style.position = "fixed";
+    target.style.left = "12px";
+    target.style.bottom = "12px";
+    target.style.opacity = "0.01";
+    document.body.appendChild(target);
   }
 
-  const textarea = document.createElement("textarea");
-  textarea.value = value;
-  textarea.setAttribute("readonly", "");
-  textarea.style.position = "fixed";
-  textarea.style.opacity = "0";
-  document.body.appendChild(textarea);
-  textarea.select();
-  document.execCommand("copy");
-  textarea.remove();
-  return Promise.resolve();
+  target.value = value;
+  target.removeAttribute("readonly");
+  target.focus();
+  target.select();
+  target.setSelectionRange?.(0, value.length);
+
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } catch {
+    copied = false;
+  }
+
+  target.setAttribute("readonly", "");
+
+  if (targetWasDetached) {
+    target.remove();
+  }
+
+  return copied;
+}
+
+async function copyText(value) {
+  setAdminLinkValue(value);
+
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return true;
+    } catch {
+      // Fall back to selection-based copy below.
+    }
+  }
+
+  return fallbackCopyText(value);
 }
 
 function openAdminPanel(message = "Timer Admin geöffnet.") {
@@ -462,9 +500,11 @@ function applyRulesAndOpenCleanLink() {
   }
 
   publishGlobalRules(getCurrentTimerRules()).then((result) => {
-    if (!result.saved) {
-      setAdminStatus("Lokal gespeichert. Öffne den normalen Link ohne Admin.");
-    }
+    setAdminStatus(
+      result.saved
+        ? "Global gespeichert. Öffne den normalen Link ohne Admin."
+        : "Auf diesem Gerät gespeichert. Öffne den normalen Link ohne Admin."
+    );
   });
 
   window.setTimeout(() => {
@@ -487,11 +527,13 @@ async function applyRulesDirectlyLive() {
     return;
   }
 
+  const campaignUrl = buildCampaignUrl(getCurrentTimerRules());
+  setAdminLinkValue(campaignUrl);
   const result = await publishGlobalRules(getCurrentTimerRules());
   setAdminStatus(
     result.saved
       ? `Live gespeichert: Besucher sehen jetzt ${CONFIG.openSlots}/${CONFIG.totalSlots} Plätze.`
-      : `Live auf deinem Gerät übernommen: ${CONFIG.openSlots}/${CONFIG.totalSlots} Plätze. Globale API noch nicht aktiv.`
+      : `Auf diesem Gerät live: ${CONFIG.openSlots}/${CONFIG.totalSlots}. Für Besucher den Kampagnenlink unten nutzen, bis die globale API aktiv ist.`
   );
 }
 
@@ -507,21 +549,17 @@ async function copyHomeLinkAndSaveRules() {
   }
 
   const cleanUrl = buildCleanPublicUrl();
-  const result = await publishGlobalRules(getCurrentTimerRules());
-  if (adminLinkOutput) {
-    adminLinkOutput.value = cleanUrl;
-  }
+  const copied = await copyText(cleanUrl);
+  setAdminStatus(copied ? "Hauptseite-Link kopiert. Speichere Einstellungen..." : `Hauptseite-Link steht im Feld: ${cleanUrl}`);
 
-  try {
-    await copyText(cleanUrl);
-    setAdminStatus(
-      result.saved
-        ? "Hauptseite-Link kopiert und globale Einstellungen gespeichert."
-        : "Hauptseite-Link kopiert. Einstellungen sind auf deinem Gerät gespeichert."
-    );
-  } catch {
-    setAdminStatus(`Hauptseite-Link: ${cleanUrl}`);
-  }
+  const result = await publishGlobalRules(getCurrentTimerRules());
+  setAdminStatus(
+    result.saved
+      ? "Hauptseite-Link kopiert und globale Einstellungen gespeichert."
+      : copied
+        ? "Hauptseite-Link kopiert. Globale API noch nicht aktiv, Einstellungen gelten auf deinem Gerät."
+        : `Hauptseite-Link steht im Feld. Globale API noch nicht aktiv.`
+  );
 }
 
 function formatTime(ms) {
@@ -638,7 +676,7 @@ function setupAdminPanel() {
     setManualLock(true);
   });
 
-  adminCopy?.addEventListener("click", () => {
+  adminCopy?.addEventListener("click", async () => {
     const rules = readAdminFormRules();
     if (!rules) {
       setAdminStatus("Bitte gültige Werte eintragen.");
@@ -646,8 +684,12 @@ function setupAdminPanel() {
     }
 
     const url = buildCampaignUrl(rules);
-    adminLinkOutput.value = url;
-    copyText(url).then(() => setAdminStatus("Kampagnenlink kopiert. Diesen Link kannst du teilen oder shorten."));
+    const copied = await copyText(url);
+    setAdminStatus(
+      copied
+        ? "Kampagnenlink kopiert. Diesen Link kannst du teilen oder shorten."
+        : "Kampagnenlink steht im Feld. Antippen, markieren und kopieren."
+    );
   });
 
   adminApplyLive?.addEventListener("click", applyRulesDirectlyLive);
