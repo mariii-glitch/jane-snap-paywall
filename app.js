@@ -4,8 +4,8 @@ const DEFAULT_CONFIG = Object.freeze({
   snap: "jane.onlyvip",
   photos: 10,
   videos: 8,
-  price: "CHF 8.-",
-  oldPrice: "CHF 29.-",
+  price: "CHF 36.-",
+  oldPrice: "",
   unlockUrl: "https://buy.stripe.com/8x2dRb0Pz54AgHi6smasg02",
   offerDurationMs: 3 * 60 * 1000,
   lockDurationMs: 3 * 60 * 1000,
@@ -607,7 +607,7 @@ function updateOfferState() {
     offerLabel.textContent = "Angebot aktiv";
     countdown.textContent = formatTime(state.remaining);
     offerStatus.textContent = "Nur jetzt offen";
-    ctaLabel.textContent = "Jetzt freischalten";
+    ctaLabel.textContent = "VIP freischalten";
     return;
   }
 

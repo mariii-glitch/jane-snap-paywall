@@ -16,7 +16,7 @@
     <meta property="og:title" content="Jane Snap VIP ist gelockt" />
     <meta
       property="og:description"
-      content="10 Bilder, 8 Videos und taeglich extrem heisse Live Snaps. Nur kurz CHF 8.- statt CHF 29.-."
+      content="10 Bilder, 8 Videos und taeglich extrem heisse Live Snaps. VIP-Zugang CHF 36.-."
     />
     <meta
       property="og:image"
@@ -34,7 +34,7 @@
     <meta name="twitter:title" content="Jane Snap VIP ist gelockt" />
     <meta
       name="twitter:description"
-      content="10 Bilder, 8 Videos und taeglich extrem heisse Live Snaps. Nur kurz CHF 8.- statt CHF 29.-."
+      content="10 Bilder, 8 Videos und taeglich extrem heisse Live Snaps. VIP-Zugang CHF 36.-."
     />
     <meta
       name="twitter:image"
@@ -45,7 +45,7 @@
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff5a7d'/%3E%3Cpath d='M22 30V24a10 10 0 0 1 20 0v6' fill='none' stroke='%2313070c' stroke-width='6' stroke-linecap='round'/%3E%3Crect x='18' y='28' width='28' height='24' rx='6' fill='%2313070c'/%3E%3C/svg%3E"
     />
     <link rel="preload" href="assets/jane-story-hero.png" as="image" />
-    <link rel="stylesheet" href="styles.css?v=no-refresh-flash" />
+    <link rel="stylesheet" href="styles.css?v=vip-feel-36" />
   </head>
   <body class="is-booting">
     <div class="page-bg" aria-hidden="true"></div>
@@ -73,6 +73,23 @@
             Beim Unlock erhältst du direkt das grosse Startpaket mit Bildern und Videos.
             Danach sendet Jane den VIPs täglich live Snaps. Extrem heiss.
           </p>
+
+          <div class="vip-visual-row" aria-hidden="true">
+            <span class="vip-pass-card">
+              <span class="vip-pass-crown">VIP</span>
+              <span class="vip-pass-lines"></span>
+            </span>
+            <span class="vip-live-orbit">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+            <span class="vip-drop-stack">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </div>
 
           <div class="unlock-strip" aria-label="Inhalt nach Freischaltung">
             <span>🔥 <strong data-field="videos">8</strong> Videos</span>
@@ -102,10 +119,10 @@
                   <path d="M12 14v3" />
                 </svg>
               </span>
-              <span data-cta-label>Jetzt freischalten</span>
+              <span data-cta-label>VIP freischalten</span>
               <span class="price">
-                <span data-field="price">CHF 8.-</span>
-                <del data-field="oldPrice">CHF 29.-</del>
+                <span data-field="price">CHF 36.-</span>
+                <del data-field="oldPrice"></del>
               </span>
             </button>
             <p class="cta-note">Janes Snap VIP freischalten.</p>
@@ -121,14 +138,14 @@
         </div>
 
         <aside class="preview-stage" id="preview" aria-label="Gesperrte Jane Snap VIP Preview">
-          <img class="jane-hero" src="assets/jane-camera.png" alt="Jane mit Kamera" />
+          <img class="jane-hero" src="assets/jane-vip-moji.png" alt="Jane mit VIP Snap Moji" />
           <div class="phone-shell">
             <div class="phone-top">
               <div>
                 <span class="status-dot"></span>
                 <strong data-field="displayName">Jane</strong>
               </div>
-              <span>VIP</span>
+              <span>VIP Live</span>
             </div>
 
             <div class="teaser-grid" aria-label="Zensierte Story Preview">
@@ -138,6 +155,7 @@
                 data-paylink
                 aria-label="Gesperrtes Bild freischalten"
               >
+                <span class="vip-ribbon">VIP Drop</span>
                 <span class="media-label">Bild 01</span>
                 <span class="lock-icon">
                   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -160,10 +178,25 @@
               <button class="media-tile" type="button" data-paylink aria-label="Gesperrtes Bild freischalten">
                 <span class="media-label">Bild</span>
               </button>
+              <button class="media-tile tile-mini" type="button" data-paylink aria-label="Gesperrtes Bild freischalten">
+                <span class="media-label">Bild</span>
+              </button>
+              <button class="media-tile tile-mini tile-video" type="button" data-paylink aria-label="Gesperrtes Video freischalten">
+                <span class="play-chip">Clip</span>
+              </button>
+              <button class="media-tile tile-mini" type="button" data-paylink aria-label="Gesperrtes Bild freischalten">
+                <span class="media-label">Bild</span>
+              </button>
             </div>
 
             <button class="account-card" type="button" data-paylink>
               <p>VIP-Zugang</p>
+              <div class="vip-content-meter" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
               <div class="blurred-line">
                 <span>Snap</span>
                 <strong data-field="snap">jane.onlyvip</strong>
@@ -303,6 +336,6 @@
 
     <div class="toast" data-toast role="status" aria-live="polite"></div>
 
-    <script src="app.js?v=admin-simple-labels" defer></script>
+    <script src="app.js?v=vip-feel-36" defer></script>
   </body>
 </html>
