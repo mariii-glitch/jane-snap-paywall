@@ -22,7 +22,7 @@ const ADMIN_PASSWORD = "123s";
 const TELEGRAM_WAITLIST_URL = "https://t.me/+df8nvcSFeAM0MDBk";
 const CONFIG_API_ENDPOINT = "/api/config";
 
-const CANONICAL_RENDER_HOST = "jane-whatsapp-premium-isolated.onrender.com";
+const CANONICAL_RENDER_HOST = "jane-whatsapp.onrender.com";
 
 if (
   window.location.hostname.endsWith(".onrender.com") &&

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: jane-whatsapp-premium-isolated
+    name: jane-whatsapp
     runtime: node
     plan: free
     buildCommand: npm install
