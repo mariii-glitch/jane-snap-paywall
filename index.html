@@ -279,22 +279,22 @@
 
           <div class="admin-actions">
             <button type="button" data-admin-now>Timer ab jetzt</button>
-            <button type="submit">Vorschau speichern</button>
+            <button type="submit">Speichern</button>
             <button type="button" data-admin-reset>Reset</button>
           </div>
 
           <div class="admin-section-title">
             <span>3</span>
-            <strong>Übernehmen</strong>
-            <small>Live anwenden startet das offene Fenster neu. Der Hauptseite-Link bleibt ohne Admin-Zusatz.</small>
+            <strong>Speichern & Link</strong>
+            <small>Hauptlink ist kurz. Link mit Einstellungen übernimmt Timer und Plätze direkt im Link.</small>
           </div>
 
-          <input class="admin-link-output" type="text" data-admin-link readonly aria-label="Generierter Kampagnenlink" />
+          <input class="admin-link-output" type="text" data-admin-link readonly aria-label="Teilbarer Link" />
           <div class="admin-actions admin-actions-link">
-            <button type="button" data-admin-apply-live>Änderungen direkt live</button>
-            <button type="button" data-admin-copy-home>Hauptseite-Link speichern</button>
-            <button type="button" data-admin-apply-clean>Hauptseite öffnen</button>
-            <button type="button" data-admin-copy>Kampagnenlink kopieren</button>
+            <button type="button" data-admin-apply-live>Live speichern</button>
+            <button type="button" data-admin-copy-home>Hauptlink kopieren</button>
+            <button type="button" data-admin-apply-clean>Admin verlassen</button>
+            <button type="button" data-admin-copy>Link mit Einstellungen kopieren</button>
           </div>
           <p class="admin-status" data-admin-status>Nur du siehst diesen Bereich.</p>
         </form>
@@ -303,6 +303,6 @@
 
     <div class="toast" data-toast role="status" aria-live="polite"></div>
 
-    <script src="app.js?v=admin-copy-live-fix" defer></script>
+    <script src="app.js?v=admin-simple-labels" defer></script>
   </body>
 </html>

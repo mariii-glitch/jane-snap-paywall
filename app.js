@@ -495,15 +495,15 @@ function applyRulesAndOpenCleanLink() {
     return;
   }
 
-  if (!applyAndStoreTimerRules(rules, "Gespeichert. Öffne jetzt den normalen Link ohne Admin.")) {
+  if (!applyAndStoreTimerRules(rules, "Gespeichert. Du kommst jetzt zurück zur Hauptseite.")) {
     return;
   }
 
   publishGlobalRules(getCurrentTimerRules()).then((result) => {
     setAdminStatus(
       result.saved
-        ? "Global gespeichert. Öffne den normalen Link ohne Admin."
-        : "Auf diesem Gerät gespeichert. Öffne den normalen Link ohne Admin."
+        ? "Gespeichert. Die Hauptseite ist aktualisiert."
+        : "Auf diesem Gerät gespeichert. Du kommst jetzt zurück zur Hauptseite."
     );
   });
 
@@ -533,7 +533,7 @@ async function applyRulesDirectlyLive() {
   setAdminStatus(
     result.saved
       ? `Live gespeichert: Besucher sehen jetzt ${CONFIG.openSlots}/${CONFIG.totalSlots} Plätze.`
-      : `Auf diesem Gerät live: ${CONFIG.openSlots}/${CONFIG.totalSlots}. Für Besucher den Kampagnenlink unten nutzen, bis die globale API aktiv ist.`
+      : `Gespeichert auf diesem Gerät: ${CONFIG.openSlots}/${CONFIG.totalSlots}. Für Besucher bitte den Link mit Einstellungen kopieren.`
   );
 }
 
@@ -544,21 +544,21 @@ async function copyHomeLinkAndSaveRules() {
     return;
   }
 
-  if (!applyAndStoreTimerRules(rules, "Hauptseite-Link wird gespeichert.")) {
+  if (!applyAndStoreTimerRules(rules, "Hauptlink wird vorbereitet.")) {
     return;
   }
 
   const cleanUrl = buildCleanPublicUrl();
   const copied = await copyText(cleanUrl);
-  setAdminStatus(copied ? "Hauptseite-Link kopiert. Speichere Einstellungen..." : `Hauptseite-Link steht im Feld: ${cleanUrl}`);
+  setAdminStatus(copied ? "Hauptlink kopiert. Speichere Einstellungen..." : `Hauptlink steht im Feld: ${cleanUrl}`);
 
   const result = await publishGlobalRules(getCurrentTimerRules());
   setAdminStatus(
     result.saved
-      ? "Hauptseite-Link kopiert und globale Einstellungen gespeichert."
+      ? "Hauptlink kopiert und Einstellungen gespeichert."
       : copied
-        ? "Hauptseite-Link kopiert. Globale API noch nicht aktiv, Einstellungen gelten auf deinem Gerät."
-        : `Hauptseite-Link steht im Feld. Globale API noch nicht aktiv.`
+        ? "Hauptlink kopiert. Einstellungen gelten aktuell auf deinem Gerät."
+        : `Hauptlink steht im Feld. Einstellungen gelten aktuell auf deinem Gerät.`
   );
 }
 
@@ -653,14 +653,14 @@ function setupAdminPanel() {
 
     applyTimerRules(rules);
     storeAdminRules(rules);
-    setAdminStatus("Vorschau gespeichert. Nutze unten Live anwenden oder Link kopieren.");
+    setAdminStatus("Gespeichert. Nutze unten Live speichern oder Link kopieren.");
   });
 
   adminNow?.addEventListener("click", () => {
     if (adminInputs.timerEpoch) {
       adminInputs.timerEpoch.value = toLocalDateTimeValue(Date.now());
       updateGeneratedLink();
-      setAdminStatus("Zyklus startet ab jetzt. Danach Vorschau anwenden oder Link kopieren.");
+      setAdminStatus("Timer startet ab jetzt. Danach speichern oder Link kopieren.");
     }
   });
 
@@ -687,8 +687,8 @@ function setupAdminPanel() {
     const copied = await copyText(url);
     setAdminStatus(
       copied
-        ? "Kampagnenlink kopiert. Diesen Link kannst du teilen oder shorten."
-        : "Kampagnenlink steht im Feld. Antippen, markieren und kopieren."
+        ? "Link mit Einstellungen kopiert. Diesen Link kannst du teilen oder shorten."
+        : "Link mit Einstellungen steht im Feld. Antippen, markieren und kopieren."
     );
   });
 
