@@ -629,9 +629,9 @@ function updateOfferState() {
 
   offerLabel.textContent = "WhatsApp Plätze voll";
   countdown.textContent = "Gesperrt";
-  offerStatus.textContent = "18+ und privat. Zugang direkt nach dem Unlock.";
-  ctaLabel.textContent = "Telegram beitreten";
-  if (ctaNote) ctaNote.textContent = "Erfahre zuerst, wenn Jane wieder Plätze öffnet.";
+  offerStatus.textContent = "Neue Plätze per Telegram";
+  ctaLabel.textContent = "Geschlossen";
+  if (ctaNote) ctaNote.textContent = "18+ und privat. Zugang direkt nach dem Unlock.";
 }
 
 function finishBoot() {
@@ -640,7 +640,8 @@ function finishBoot() {
 
 function goToUnlock() {
   if (isLocked) {
-    window.location.href = TELEGRAM_WAITLIST_URL;
+    waitlist?.scrollIntoView({ block: "center", behavior: "smooth" });
+    showToast("Gerade geschlossen. Telegram unten informiert dich zuerst über neue Plätze.");
     return;
   }
 

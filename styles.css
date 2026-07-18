@@ -1166,14 +1166,17 @@ h1 {
 }
 
 .is-offer-locked .primary-cta {
-  grid-template-columns: 30px minmax(0, 1fr);
-  background: #229ed9;
-  box-shadow: 0 14px 30px rgba(34, 158, 217, 0.25);
-  cursor: pointer;
+  background: #8696a0;
+  box-shadow: none;
+  cursor: default;
 }
 
 .is-offer-locked .price {
-  display: none;
+  color: #54656f;
+}
+
+.is-offer-locked .primary-cta:hover {
+  background: #8696a0;
 }
 
 @media (max-width: 980px) {
