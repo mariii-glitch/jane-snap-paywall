@@ -313,6 +313,7 @@ h1 {
   height: 100%;
   border-radius: inherit;
   object-fit: cover;
+  object-position: 30% 30%;
   background: #dfe5e7;
 }
 
@@ -413,6 +414,7 @@ h1 {
   width: 52px;
   height: 52px;
   flex: 0 0 auto;
+  border-radius: 999px;
 }
 
 .conversation-title {
@@ -707,8 +709,8 @@ h1 {
 .waitlist-card {
   display: grid;
   align-self: flex-end;
-  gap: 8px;
-  padding: 13px;
+  gap: 10px;
+  padding: 15px;
 }
 
 .waitlist-card[hidden] {
@@ -716,27 +718,39 @@ h1 {
 }
 
 .waitlist-card span {
-  color: var(--danger);
+  color: var(--wa-green-dark);
   font-size: 0.8rem;
   font-weight: 900;
   text-transform: uppercase;
 }
 
 .waitlist-card strong {
-  font-size: 1rem;
+  color: var(--ink);
+  font-size: 1.04rem;
   line-height: 1.25;
 }
 
 .waitlist-card a {
   display: inline-flex;
+  align-items: center;
+  gap: 8px;
   justify-content: center;
   min-height: 42px;
-  width: fit-content;
-  padding: 10px 14px;
+  width: 100%;
+  padding: 11px 16px;
   border-radius: 999px;
-  background: var(--wa-green);
+  background: #229ed9;
   color: var(--white);
   font-weight: 900;
+  box-shadow: 0 10px 24px rgba(34, 158, 217, 0.24);
+}
+
+.waitlist-card a::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background: currentColor;
+  clip-path: polygon(2% 44%, 98% 4%, 82% 96%, 52% 68%, 34% 86%, 38% 61%);
 }
 
 .mobile-composer {
@@ -1152,17 +1166,18 @@ h1 {
 }
 
 .is-offer-locked .primary-cta {
-  background: #8696a0;
-  box-shadow: none;
-  cursor: not-allowed;
+  grid-template-columns: 30px minmax(0, 1fr);
+  background: #229ed9;
+  box-shadow: 0 14px 30px rgba(34, 158, 217, 0.25);
+  cursor: pointer;
 }
 
 .is-offer-locked .price {
-  color: #54656f;
+  display: none;
 }
 
 .is-offer-locked .conversation-body::after {
-  content: "Gerade geschlossen";
+  content: "Telegram informiert zuerst";
   position: absolute;
   right: 24px;
   bottom: 24px;

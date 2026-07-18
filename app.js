@@ -22,7 +22,7 @@ const ADMIN_PASSWORD = "123s";
 const TELEGRAM_WAITLIST_URL = "https://t.me/+df8nvcSFeAM0MDBk";
 const CONFIG_API_ENDPOINT = "/api/config";
 
-const CANONICAL_RENDER_HOST = "jane-whatsapp.onrender.com";
+const CANONICAL_RENDER_HOST = "jane-whatsapp-standard.onrender.com";
 
 if (
   window.location.hostname.endsWith(".onrender.com") &&
@@ -42,6 +42,7 @@ const slotBar = document.querySelector("[data-slot-bar]");
 const offerLabel = document.querySelector("[data-offer-label]");
 const offerStatus = document.querySelector("[data-offer-status]");
 const ctaLabel = document.querySelector("[data-cta-label]");
+const ctaNote = document.querySelector("[data-cta-note]");
 const waitlist = document.querySelector("[data-waitlist]");
 const waitlistLink = document.querySelector("[data-waitlist-link]");
 const adminGate = document.querySelector("[data-admin-gate]");
@@ -622,13 +623,15 @@ function updateOfferState() {
     countdown.textContent = formatTime(state.remaining);
     offerStatus.textContent = "WhatsApp Premium offen";
     ctaLabel.textContent = "WhatsApp Premium freischalten";
+    if (ctaNote) ctaNote.textContent = "18+ und privat. Zugang direkt nach dem Unlock.";
     return;
   }
 
-  offerLabel.textContent = state.manualLock ? "Geschlossen" : "Zu spät";
-  countdown.textContent = state.manualLock ? "Gesperrt" : "Verpasst";
-  offerStatus.textContent = state.manualLock ? "Neue Plätze per Telegram" : "Alle Premium-Plätze belegt";
-  ctaLabel.textContent = state.manualLock ? "Geschlossen" : "Verpasst";
+  offerLabel.textContent = "WhatsApp Plätze voll";
+  countdown.textContent = state.manualLock ? "Pause" : "Bald wieder";
+  offerStatus.textContent = "Telegram informiert zuerst";
+  ctaLabel.textContent = "Bei Telegram vormerken";
+  if (ctaNote) ctaNote.textContent = "Telegram öffnet extern und informiert dich zuerst über neue Plätze.";
 }
 
 function finishBoot() {
@@ -637,7 +640,7 @@ function finishBoot() {
 
 function goToUnlock() {
   if (isLocked) {
-    showToast("Gerade geschlossen. Tritt Telegram bei und erfahre neue WhatsApp-Plätze zuerst.");
+    window.location.href = TELEGRAM_WAITLIST_URL;
     return;
   }
 
