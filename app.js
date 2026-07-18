@@ -628,10 +628,10 @@ function updateOfferState() {
   }
 
   offerLabel.textContent = "WhatsApp Plätze voll";
-  countdown.textContent = state.manualLock ? "Pause" : "Bald wieder";
-  offerStatus.textContent = "Telegram informiert zuerst";
-  ctaLabel.textContent = "Bei Telegram vormerken";
-  if (ctaNote) ctaNote.textContent = "Telegram öffnet extern und informiert dich zuerst über neue Plätze.";
+  countdown.textContent = "Gesperrt";
+  offerStatus.textContent = "Neue Plätze per Telegram";
+  ctaLabel.textContent = "Telegram beitreten";
+  if (ctaNote) ctaNote.textContent = "Erfahre zuerst, wenn Jane wieder Plätze öffnet.";
 }
 
 function finishBoot() {
