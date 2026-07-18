@@ -629,7 +629,7 @@ function updateOfferState() {
 
   offerLabel.textContent = "WhatsApp Plätze voll";
   countdown.textContent = "Gesperrt";
-  offerStatus.textContent = "Neue Plätze per Telegram";
+  offerStatus.textContent = "18+ und privat. Zugang direkt nach dem Unlock.";
   ctaLabel.textContent = "Telegram beitreten";
   if (ctaNote) ctaNote.textContent = "Erfahre zuerst, wenn Jane wieder Plätze öffnet.";
 }
