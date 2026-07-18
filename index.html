@@ -2,7 +2,7 @@
 <html lang="de">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Jane WhatsApp Premium</title>
     <meta
       name="description"
@@ -45,7 +45,7 @@
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%2300a884'/%3E%3Cpath d='M18 47l4-10a17 17 0 1 1 7 6z' fill='none' stroke='%23fff' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M27 25c2 6 6 10 12 12' fill='none' stroke='%23fff' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E"
     />
     <link rel="preload" href="assets/jane-story-hero.png" as="image" />
-    <link rel="stylesheet" href="styles.css?v=whatsapp-premium" />
+    <link rel="stylesheet" href="styles.css?v=whatsapp-premium-mobile" />
   </head>
   <body class="is-booting">
     <div class="page-bg" aria-hidden="true"></div>
@@ -146,10 +146,33 @@
 
         <section class="conversation-panel" aria-label="Jane WhatsApp Premium Chat">
           <div class="conversation-head">
+            <button class="mobile-back" type="button" aria-label="Zurück zur Chatliste">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M15 6l-6 6 6 6" />
+              </svg>
+            </button>
             <img src="assets/jane-camera.png" alt="Jane Profilbild" />
-            <div>
+            <div class="conversation-title">
               <strong data-field="displayName">Jane</strong>
               <span>online - private WhatsApp Premium</span>
+            </div>
+            <div class="conversation-actions" aria-label="Chat Aktionen">
+              <button class="head-icon" type="button" data-paylink aria-label="Jane anrufen">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M7 5l3 4-2 2c1 2 3 4 5 5l2-2 4 3-2 4c-7-1-13-7-14-14z" />
+                </svg>
+              </button>
+              <button class="head-icon" type="button" data-paylink aria-label="Video Paket ansehen">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="7" width="12" height="10" rx="2" />
+                  <path d="M15 10l5-3v10l-5-3z" />
+                </svg>
+              </button>
+              <button class="head-icon" type="button" data-paylink aria-label="Mehr Optionen">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 5v.01M12 12v.01M12 19v.01" />
+                </svg>
+              </button>
             </div>
           </div>
 
@@ -204,7 +227,7 @@
                   </span>
                   <span data-cta-label>WhatsApp Premium freischalten</span>
                   <span class="price">
-                    <span data-field="price">CHF 8.-</span>
+                    <span data-field="price">CHF 16.-</span>
                     <del data-field="oldPrice">CHF 29.-</del>
                   </span>
                 </button>
@@ -230,6 +253,22 @@
               <a href="https://t.me/+df8nvcSFeAM0MDBk" target="_blank" rel="noopener" data-waitlist-link>
                 Telegram beitreten
               </a>
+            </div>
+
+            <div class="mobile-composer" aria-label="WhatsApp Nachricht">
+              <button class="composer-icon" type="button" data-paylink aria-label="Medien öffnen">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </button>
+              <button class="composer-field" type="button" data-paylink>
+                Nachricht an Jane...
+              </button>
+              <button class="composer-send" type="button" data-paylink aria-label="WhatsApp Premium freischalten">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h13M13 6l6 6-6 6" />
+                </svg>
+              </button>
             </div>
           </div>
         </section>
@@ -361,6 +400,6 @@
 
     <div class="toast" data-toast role="status" aria-live="polite"></div>
 
-    <script src="app.js?v=whatsapp-premium" defer></script>
+    <script src="app.js?v=whatsapp-premium-mobile" defer></script>
   </body>
 </html>

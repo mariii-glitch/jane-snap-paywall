@@ -4,7 +4,7 @@ const DEFAULT_CONFIG = Object.freeze({
   snap: "Jane Premium",
   photos: 5,
   videos: 3,
-  price: "CHF 8.-",
+  price: "CHF 16.-",
   oldPrice: "CHF 29.-",
   unlockUrl: "https://buy.stripe.com/dRm28t8i1aoU62E3gaasg03",
   offerDurationMs: 3 * 60 * 1000,

@@ -156,7 +156,11 @@ main {
 .rail-item svg,
 .search-pill svg,
 .avatar-call svg,
-.cta-icon svg {
+.cta-icon svg,
+.mobile-back svg,
+.head-icon svg,
+.composer-icon svg,
+.composer-send svg {
   width: 24px;
   height: 24px;
   fill: none;
@@ -385,14 +389,53 @@ h1 {
   background: #f0f2f5;
 }
 
+.mobile-back,
+.head-icon,
+.composer-icon,
+.composer-send {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #54656f;
+  cursor: pointer;
+}
+
+.mobile-back {
+  display: none;
+  width: 38px;
+  height: 38px;
+}
+
 .conversation-head img {
   width: 52px;
   height: 52px;
   flex: 0 0 auto;
 }
 
-.conversation-head div {
+.conversation-title {
+  flex: 1 1 auto;
   min-width: 0;
+}
+
+.conversation-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.head-icon {
+  width: 42px;
+  height: 42px;
+}
+
+.head-icon:hover,
+.composer-icon:hover,
+.composer-send:hover {
+  background: rgba(17, 27, 33, 0.07);
 }
 
 .conversation-head strong {
@@ -694,6 +737,35 @@ h1 {
   background: var(--wa-green);
   color: var(--white);
   font-weight: 900;
+}
+
+.mobile-composer {
+  display: none;
+}
+
+.composer-field {
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 15px;
+  background: var(--white);
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.composer-icon,
+.composer-send {
+  width: 44px;
+  height: 44px;
+  background: #f0f2f5;
+}
+
+.composer-send {
+  background: var(--wa-green);
+  color: var(--white);
 }
 
 .details {
@@ -1133,22 +1205,22 @@ h1 {
 }
 
 @media (max-width: 680px) {
-  .topbar,
+  body {
+    background: var(--wa-chat);
+  }
+
+  .page-bg {
+    background: var(--wa-chat);
+  }
+
   main {
     width: 100%;
-    padding-right: 12px;
-    padding-left: 12px;
+    padding-right: 0;
+    padding-left: 0;
   }
 
   .topbar {
-    padding-top: 12px;
-  }
-
-  .brand span:last-child {
-    max-width: 230px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    display: none;
   }
 
   .nav-actions {
@@ -1156,32 +1228,99 @@ h1 {
   }
 
   .whatsapp-window {
+    width: 100%;
+    max-width: 100vw;
+    min-height: 100svh;
     grid-template-columns: 1fr;
+    border: 0;
     border-radius: 0;
+    box-shadow: none;
   }
 
   .wa-rail {
     display: none;
   }
 
+  .conversation-panel {
+    width: 100%;
+    max-width: 100vw;
+    min-height: 100svh;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
   .conversation-head {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
     min-height: 68px;
-    padding: 10px 12px;
+    gap: 8px;
+    padding: calc(8px + env(safe-area-inset-top)) 8px 8px;
+    background: #f0f2f5;
+  }
+
+  .mobile-back {
+    display: grid;
   }
 
   .conversation-head img {
-    width: 46px;
-    height: 46px;
+    width: 42px;
+    height: 42px;
+  }
+
+  .conversation-head strong {
+    font-size: 1rem;
+  }
+
+  .conversation-head span {
+    margin-top: 3px;
+    font-size: 0.8rem;
+  }
+
+  .conversation-actions {
+    gap: 0;
+  }
+
+  .conversation-actions .head-icon:last-child {
+    display: none;
+  }
+
+  .head-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .head-icon svg {
+    width: 21px;
+    height: 21px;
   }
 
   .conversation-body {
-    min-height: calc(100svh - 136px);
-    padding: 14px 10px 18px;
+    width: 100%;
+    max-width: 100vw;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    gap: 8px;
+    padding: 10px 8px calc(72px + env(safe-area-inset-bottom));
+    -webkit-overflow-scrolling: touch;
   }
 
   .message-bubble,
   .offer-message {
-    max-width: 94%;
+    max-width: calc(100vw - 32px);
+  }
+
+  .message-bubble p {
+    overflow-wrap: anywhere;
+  }
+
+  .unlock-card,
+  .account-card,
+  .waitlist-card {
+    max-width: calc(100vw - 16px);
   }
 
   .offer-panel {
@@ -1200,17 +1339,43 @@ h1 {
   }
 
   .primary-cta {
+    min-width: 0;
     grid-template-columns: 30px minmax(0, 1fr);
     border-radius: 18px;
   }
 
   .primary-cta > span:nth-child(2) {
+    min-width: 0;
+    overflow-wrap: anywhere;
     text-align: center;
   }
 
   .price {
     grid-column: 1 / -1;
     justify-self: center;
+  }
+
+  .account-card {
+    margin-bottom: 8px;
+  }
+
+  .mobile-composer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 4;
+    width: auto;
+    max-width: none;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    gap: 7px;
+    align-items: end;
+    margin: 0;
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+    background:
+      linear-gradient(180deg, rgba(239, 234, 226, 0), var(--wa-chat) 18%),
+      var(--wa-chat);
   }
 
   .admin-form,
