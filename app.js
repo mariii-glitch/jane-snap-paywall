@@ -235,7 +235,7 @@ async function fetchConfigApi(path = CONFIG_API_ENDPOINT, options = {}) {
   if (!canUseConfigApi()) return null;
 
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), 1800);
+  const timeout = window.setTimeout(() => controller.abort(), 6000);
 
   try {
     const response = await window.fetch(path, {
@@ -346,6 +346,23 @@ function applyAndStoreTimerRules(rules, message) {
   return true;
 }
 
+async function applyStoreAndPublishTimerRules(rules, liveMessage, fallbackMessage) {
+  if (!applyAndStoreTimerRules(rules, "Speichere live...")) {
+    return false;
+  }
+
+  const result = await publishGlobalRules(getCurrentTimerRules());
+  if (result.saved) {
+    applyTimerRules(result.rules);
+    storeAdminRules(result.rules);
+    setAdminStatus(liveMessage);
+    return true;
+  }
+
+  setAdminStatus(fallbackMessage || "Auf diesem Gerät gespeichert. Live konnte nicht aktualisiert werden.");
+  return false;
+}
+
 function fallbackCopyText(value) {
   const target = adminLinkOutput || document.createElement("textarea");
   const targetWasDetached = !target.parentNode;
@@ -400,11 +417,6 @@ async function copyText(value) {
 function openAdminPanel(message = "Timer Admin geöffnet.") {
   if (!adminPanel) return;
 
-  const storedRules = readStoredAdminRules();
-  if (storedRules) {
-    applyTimerRules(storedRules);
-  }
-
   adminPanel.hidden = false;
   if (adminGate) {
     adminGate.hidden = true;
@@ -452,7 +464,7 @@ function submitAdminPassword(event) {
   adminPasswordInput?.select();
 }
 
-function setTimerWindow(active) {
+async function setTimerWindow(active) {
   const rules = readAdminFormRules() || getCurrentTimerRules();
   const timerEpochMs = Date.now() - (active ? 0 : rules.offerDurationMs);
   const nextRules = normalizeTimerRules({ ...rules, timerEpochMs, manualLock: false });
@@ -462,15 +474,18 @@ function setTimerWindow(active) {
     return;
   }
 
-  applyAndStoreTimerRules(
+  await applyStoreAndPublishTimerRules(
     nextRules,
     active
-      ? "Wieder eingeschaltet. Das offene Fenster läuft ab jetzt weiter."
-      : "Kurz gesperrt. Das geschlossene Fenster läuft ab jetzt weiter."
+      ? "Live geöffnet. Besucher können jetzt wieder freischalten."
+      : "Live kurz geschlossen. Besucher sehen jetzt den geschlossenen Zustand.",
+    active
+      ? "Auf diesem Gerät geöffnet. Live konnte nicht aktualisiert werden."
+      : "Auf diesem Gerät kurz geschlossen. Live konnte nicht aktualisiert werden."
   );
 }
 
-function setManualLock(enabled) {
+async function setManualLock(enabled) {
   const rules = readAdminFormRules() || getCurrentTimerRules();
   const timerEpochMs = Date.now() - (enabled ? rules.offerDurationMs : 0);
   const nextRules = normalizeTimerRules({ ...rules, timerEpochMs, manualLock: enabled });
@@ -480,32 +495,32 @@ function setManualLock(enabled) {
     return;
   }
 
-  applyAndStoreTimerRules(
+  await applyStoreAndPublishTimerRules(
     nextRules,
     enabled
-      ? "Dauerhaft gesperrt. Bleibt zu, bis du wieder einschaltest."
-      : "Wieder eingeschaltet. Das offene Fenster läuft ab jetzt weiter."
+      ? "Live dauerhaft geschlossen. Bleibt zu, bis du wieder öffnest."
+      : "Live geöffnet. Besucher können jetzt wieder freischalten.",
+    enabled
+      ? "Auf diesem Gerät dauerhaft geschlossen. Live konnte nicht aktualisiert werden."
+      : "Auf diesem Gerät geöffnet. Live konnte nicht aktualisiert werden."
   );
 }
 
-function applyRulesAndOpenCleanLink() {
+async function applyRulesAndOpenCleanLink() {
   const rules = readAdminFormRules();
   if (!rules) {
     setAdminStatus("Bitte gültige Werte eintragen.");
     return;
   }
 
-  if (!applyAndStoreTimerRules(rules, "Gespeichert. Du kommst jetzt zurück zur Hauptseite.")) {
+  const saved = await applyStoreAndPublishTimerRules(
+    rules,
+    "Gespeichert. Die Hauptseite ist aktualisiert.",
+    "Auf diesem Gerät gespeichert. Live konnte nicht aktualisiert werden."
+  );
+  if (!saved) {
     return;
   }
-
-  publishGlobalRules(getCurrentTimerRules()).then((result) => {
-    setAdminStatus(
-      result.saved
-        ? "Gespeichert. Die Hauptseite ist aktualisiert."
-        : "Auf diesem Gerät gespeichert. Du kommst jetzt zurück zur Hauptseite."
-    );
-  });
 
   window.setTimeout(() => {
     window.location.replace(buildCleanPublicUrl());
@@ -513,27 +528,21 @@ function applyRulesAndOpenCleanLink() {
 }
 
 async function applyRulesDirectlyLive() {
-  const nextRules = readAdminFormRules({
-    timerEpochMs: Date.now(),
-    manualLock: false,
-  });
+  const nextRules = readAdminFormRules();
 
   if (!nextRules) {
     setAdminStatus("Bitte gültige Werte eintragen.");
     return;
   }
 
-  if (!applyAndStoreTimerRules(nextRules, "Live übernommen. Das offene Fenster startet jetzt neu.")) {
-    return;
-  }
-
-  const campaignUrl = buildCampaignUrl(getCurrentTimerRules());
+  const campaignUrl = buildCampaignUrl(nextRules);
   setAdminLinkValue(campaignUrl);
-  const result = await publishGlobalRules(getCurrentTimerRules());
-  setAdminStatus(
-    result.saved
-      ? `Live gespeichert: Besucher sehen jetzt ${CONFIG.openSlots}/${CONFIG.totalSlots} Plätze.`
-      : `Gespeichert auf diesem Gerät: ${CONFIG.openSlots}/${CONFIG.totalSlots}. Für Besucher bitte den Link mit Einstellungen kopieren.`
+  await applyStoreAndPublishTimerRules(
+    nextRules,
+    nextRules.manualLock
+      ? "Live gespeichert: Seite ist dauerhaft geschlossen."
+      : `Live gespeichert: Besucher sehen jetzt ${nextRules.openSlots}/${nextRules.totalSlots} Plätze.`,
+    `Gespeichert auf diesem Gerät: ${nextRules.openSlots}/${nextRules.totalSlots}. Live konnte nicht aktualisiert werden.`
   );
 }
 
@@ -553,9 +562,14 @@ async function copyHomeLinkAndSaveRules() {
   setAdminStatus(copied ? "Hauptlink kopiert. Speichere Einstellungen..." : `Hauptlink steht im Feld: ${cleanUrl}`);
 
   const result = await publishGlobalRules(getCurrentTimerRules());
+  if (result.saved) {
+    applyTimerRules(result.rules);
+    storeAdminRules(result.rules);
+  }
+
   setAdminStatus(
     result.saved
-      ? "Hauptlink kopiert und Einstellungen gespeichert."
+      ? "Hauptlink kopiert und live gespeichert."
       : copied
         ? "Hauptlink kopiert. Einstellungen gelten aktuell auf deinem Gerät."
         : `Hauptlink steht im Feld. Einstellungen gelten aktuell auf deinem Gerät.`
@@ -705,7 +719,7 @@ function setupAdminPanel() {
 
     applyTimerRules(DEFAULT_CONFIG);
     storeAdminRules(DEFAULT_CONFIG);
-    setAdminStatus("Timer-Regeln auf Standard zurückgesetzt.");
+    setAdminStatus("Standard lokal gesetzt. Nutze Live speichern, wenn das online gelten soll.");
   });
 
   adminClose?.addEventListener("click", () => {
