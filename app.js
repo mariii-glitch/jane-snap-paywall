@@ -200,14 +200,23 @@ function toLocalDateTimeValue(timestamp) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+function parseNumberInput(input, fallback) {
+  const value = Number(input?.value);
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function parseDateTimeInput(input, fallback) {
+  const timestamp = new Date(input?.value || "").getTime();
+  return Number.isFinite(timestamp) ? timestamp : fallback;
+}
+
 function readAdminFormRules(overrides = {}) {
-  const timerEpoch = new Date(adminInputs.timerEpoch?.value || "").getTime();
   return normalizeTimerRules({
-    offerDurationMs: Number(adminInputs.offerMinutes?.value) * 60 * 1000,
-    lockDurationMs: Number(adminInputs.lockMinutes?.value) * 60 * 1000,
-    timerEpochMs: timerEpoch,
-    openSlots: Number(adminInputs.openSlots?.value),
-    totalSlots: Number(adminInputs.totalSlots?.value),
+    offerDurationMs: parseNumberInput(adminInputs.offerMinutes, toMinutes(CONFIG.offerDurationMs)) * 60 * 1000,
+    lockDurationMs: parseNumberInput(adminInputs.lockMinutes, toMinutes(CONFIG.lockDurationMs)) * 60 * 1000,
+    timerEpochMs: parseDateTimeInput(adminInputs.timerEpoch, CONFIG.timerEpochMs),
+    openSlots: parseNumberInput(adminInputs.openSlots, CONFIG.openSlots),
+    totalSlots: parseNumberInput(adminInputs.totalSlots, CONFIG.totalSlots),
     manualLock: CONFIG.manualLock,
     ...overrides,
   });
@@ -346,6 +355,29 @@ function applyAndStoreTimerRules(rules, message) {
   return true;
 }
 
+async function applyStoreAndPublishTimerRules(rules, messages = {}) {
+  if (!applyAndStoreTimerRules(rules, messages.pending || "Gespeichert.")) {
+    return { applied: false, saved: false };
+  }
+
+  const currentRules = getCurrentTimerRules();
+  setAdminLinkValue(buildCampaignUrl(currentRules));
+
+  const result = await publishGlobalRules(currentRules);
+  const state = getOfferState();
+  const savedMessage = typeof messages.saved === "function" ? messages.saved(currentRules, state) : messages.saved;
+  const fallbackMessage =
+    typeof messages.fallback === "function" ? messages.fallback(currentRules, state) : messages.fallback;
+
+  setAdminStatus(
+    result.saved
+      ? savedMessage || "Gespeichert. Besucher sehen die Änderung jetzt."
+      : fallbackMessage || "Gespeichert auf diesem Gerät. Für Besucher bitte den Link mit Einstellungen kopieren."
+  );
+
+  return { applied: true, saved: result.saved };
+}
+
 function fallbackCopyText(value) {
   const target = adminLinkOutput || document.createElement("textarea");
   const targetWasDetached = !target.parentNode;
@@ -394,7 +426,8 @@ async function copyText(value) {
     }
   }
 
-  return fallbackCopyText(value);
+  fallbackCopyText(value);
+  return false;
 }
 
 function openAdminPanel(message = "Timer Admin geöffnet.") {
@@ -452,7 +485,7 @@ function submitAdminPassword(event) {
   adminPasswordInput?.select();
 }
 
-function setTimerWindow(active) {
+async function setTimerWindow(active) {
   const rules = readAdminFormRules() || getCurrentTimerRules();
   const timerEpochMs = Date.now() - (active ? 0 : rules.offerDurationMs);
   const nextRules = normalizeTimerRules({ ...rules, timerEpochMs, manualLock: false });
@@ -462,15 +495,18 @@ function setTimerWindow(active) {
     return;
   }
 
-  applyAndStoreTimerRules(
-    nextRules,
-    active
-      ? "Wieder eingeschaltet. Das offene Fenster läuft ab jetzt weiter."
-      : "Kurz gesperrt. Das geschlossene Fenster läuft ab jetzt weiter."
-  );
+  await applyStoreAndPublishTimerRules(nextRules, {
+    pending: active ? "Öffne jetzt..." : "Schliesse kurz...",
+    saved: active
+      ? "Live gespeichert: Besucher können jetzt wieder freischalten."
+      : "Live gespeichert: Besucher sehen jetzt geschlossen.",
+    fallback: active
+      ? "Geöffnet auf diesem Gerät. Für Besucher bitte den Link mit Einstellungen kopieren."
+      : "Kurz geschlossen auf diesem Gerät. Für Besucher bitte den Link mit Einstellungen kopieren.",
+  });
 }
 
-function setManualLock(enabled) {
+async function setManualLock(enabled) {
   const rules = readAdminFormRules() || getCurrentTimerRules();
   const timerEpochMs = Date.now() - (enabled ? rules.offerDurationMs : 0);
   const nextRules = normalizeTimerRules({ ...rules, timerEpochMs, manualLock: enabled });
@@ -480,12 +516,15 @@ function setManualLock(enabled) {
     return;
   }
 
-  applyAndStoreTimerRules(
-    nextRules,
-    enabled
-      ? "Dauerhaft gesperrt. Bleibt zu, bis du wieder einschaltest."
-      : "Wieder eingeschaltet. Das offene Fenster läuft ab jetzt weiter."
-  );
+  await applyStoreAndPublishTimerRules(nextRules, {
+    pending: enabled ? "Schliesse dauerhaft..." : "Öffne wieder...",
+    saved: enabled
+      ? "Live gespeichert: bleibt dauerhaft geschlossen, bis du wieder öffnest."
+      : "Live gespeichert: Besucher können jetzt wieder freischalten.",
+    fallback: enabled
+      ? "Dauerhaft geschlossen auf diesem Gerät. Für Besucher bitte den Link mit Einstellungen kopieren."
+      : "Geöffnet auf diesem Gerät. Für Besucher bitte den Link mit Einstellungen kopieren.",
+  });
 }
 
 function applyRulesAndOpenCleanLink() {
@@ -513,28 +552,28 @@ function applyRulesAndOpenCleanLink() {
 }
 
 async function applyRulesDirectlyLive() {
-  const nextRules = readAdminFormRules({
-    timerEpochMs: Date.now(),
-    manualLock: false,
-  });
+  const nextRules = readAdminFormRules(
+    CONFIG.manualLock
+      ? { timerEpochMs: Date.now(), manualLock: true }
+      : { timerEpochMs: Date.now(), manualLock: false }
+  );
 
   if (!nextRules) {
     setAdminStatus("Bitte gültige Werte eintragen.");
     return;
   }
 
-  if (!applyAndStoreTimerRules(nextRules, "Live übernommen. Das offene Fenster startet jetzt neu.")) {
-    return;
-  }
-
-  const campaignUrl = buildCampaignUrl(getCurrentTimerRules());
-  setAdminLinkValue(campaignUrl);
-  const result = await publishGlobalRules(getCurrentTimerRules());
-  setAdminStatus(
-    result.saved
-      ? `Live gespeichert: Besucher sehen jetzt ${CONFIG.openSlots}/${CONFIG.totalSlots} Plätze.`
-      : `Gespeichert auf diesem Gerät: ${CONFIG.openSlots}/${CONFIG.totalSlots}. Für Besucher bitte den Link mit Einstellungen kopieren.`
-  );
+  await applyStoreAndPublishTimerRules(nextRules, {
+    pending: nextRules.manualLock ? "Speichere dauerhaft geschlossen..." : "Speichere live...",
+    saved: (rules) =>
+      rules.manualLock
+        ? "Live gespeichert: bleibt dauerhaft geschlossen, bis du wieder öffnest."
+        : `Live gespeichert: Besucher sehen jetzt ${rules.openSlots}/${rules.totalSlots} Plätze.`,
+    fallback: (rules) =>
+      rules.manualLock
+        ? "Dauerhaft geschlossen auf diesem Gerät. Für Besucher bitte den Link mit Einstellungen kopieren."
+        : `Gespeichert auf diesem Gerät: ${rules.openSlots}/${rules.totalSlots}. Für Besucher bitte den Link mit Einstellungen kopieren.`,
+  });
 }
 
 async function copyHomeLinkAndSaveRules() {
@@ -665,15 +704,15 @@ function setupAdminPanel() {
   });
 
   adminUnlockNow?.addEventListener("click", () => {
-    setManualLock(false);
+    void setManualLock(false);
   });
 
   adminLockNow?.addEventListener("click", () => {
-    setTimerWindow(false);
+    void setTimerWindow(false);
   });
 
   adminHoldLock?.addEventListener("click", () => {
-    setManualLock(true);
+    void setManualLock(true);
   });
 
   adminCopy?.addEventListener("click", async () => {
@@ -696,16 +735,18 @@ function setupAdminPanel() {
   adminCopyHome?.addEventListener("click", copyHomeLinkAndSaveRules);
   adminApplyClean?.addEventListener("click", applyRulesAndOpenCleanLink);
 
-  adminReset?.addEventListener("click", () => {
+  adminReset?.addEventListener("click", async () => {
     try {
       window.localStorage.removeItem(ADMIN_STORAGE_KEY);
     } catch {
       // Ignore storage failures; reset still works for the current page.
     }
 
-    applyTimerRules(DEFAULT_CONFIG);
-    storeAdminRules(DEFAULT_CONFIG);
-    setAdminStatus("Timer-Regeln auf Standard zurückgesetzt.");
+    await applyStoreAndPublishTimerRules(DEFAULT_CONFIG, {
+      pending: "Setze auf Standard zurück...",
+      saved: "Standard gespeichert. Besucher sehen wieder die Original-Einstellungen.",
+      fallback: "Standard auf diesem Gerät zurückgesetzt. Für Besucher bitte den Link mit Einstellungen kopieren.",
+    });
   });
 
   adminClose?.addEventListener("click", () => {
