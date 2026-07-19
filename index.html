@@ -46,7 +46,7 @@
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff5a7d'/%3E%3Cpath d='M22 30V24a10 10 0 0 1 20 0v6' fill='none' stroke='%2313070c' stroke-width='6' stroke-linecap='round'/%3E%3Crect x='18' y='28' width='28' height='24' rx='6' fill='%2313070c'/%3E%3C/svg%3E"
     />
     <link rel="preload" href="assets/jane-story-hero.png" as="image" />
-    <link rel="stylesheet" href="styles.css?v=vip-feel-36" />
+    <link rel="stylesheet" href="styles.css?v=vip-plus-1" />
   </head>
   <body class="is-booting">
     <div class="page-bg" aria-hidden="true"></div>
@@ -68,12 +68,30 @@
             <img src="assets/jane-fire.png" alt="" />
             <img src="assets/jane-heart.png" alt="" />
           </div>
-          <p class="eyebrow">Jane's Snap VIP</p>
-          <h1 id="hero-title">Snap VIP ist gelockt.</h1>
+          <p class="eyebrow">
+            <span class="snap-plus-badge" aria-hidden="true">VIP+</span>
+            Jane's Snap VIP
+          </p>
+          <h1 id="hero-title">Jane Snap VIP+</h1>
           <p class="lead">
             Beim Unlock erhältst du direkt das grosse Startpaket mit Bildern und Videos.
             Danach sendet Jane den VIPs täglich live Snaps. Extrem heiss.
           </p>
+
+          <div class="vip-status-board" aria-label="VIP Vorschau">
+            <div>
+              <span>Member Pass</span>
+              <strong>Gold Status</strong>
+            </div>
+            <div>
+              <span>Heute live</span>
+              <strong>3 neue Snaps</strong>
+            </div>
+            <div>
+              <span>Drop gesperrt</span>
+              <strong>18 Dateien</strong>
+            </div>
+          </div>
 
           <div class="vip-visual-row" aria-hidden="true">
             <span class="vip-pass-card">
@@ -93,9 +111,9 @@
           </div>
 
           <div class="unlock-strip" aria-label="Inhalt nach Freischaltung">
-            <span>🔥 <strong data-field="videos">8</strong> Videos</span>
-            <span>💛 <strong data-field="photos">10</strong> Bilder</span>
-            <span>👻 Live Snaps</span>
+            <span><strong data-field="videos">8</strong> Videos</span>
+            <span><strong data-field="photos">10</strong> Bilder</span>
+            <span>Live VIP Snaps</span>
           </div>
 
           <div class="offer-panel" data-offer-panel aria-label="Angebot">
@@ -139,6 +157,11 @@
         </div>
 
         <aside class="preview-stage" id="preview" aria-label="Gesperrte Jane Snap VIP Preview">
+          <div class="vip-stage-badges" aria-hidden="true">
+            <span>VIP MEMBER</span>
+            <span>SNAP+ DROP</span>
+            <span>LIVE DAILY</span>
+          </div>
           <img class="jane-hero" src="assets/jane-vip-moji.png" alt="Jane mit VIP Snap Moji" />
           <div class="phone-shell">
             <div class="phone-top">
@@ -147,6 +170,23 @@
                 <strong data-field="displayName">Jane</strong>
               </div>
               <span>VIP Live</span>
+            </div>
+
+            <button class="vip-live-card" type="button" data-paylink aria-label="VIP Live Snaps freischalten">
+              <span class="vip-live-avatar"></span>
+              <span>
+                <strong>Jane hat heute VIP Snaps bereit</strong>
+                <small>Privater Snap+ Zugang gesperrt</small>
+              </span>
+              <span class="vip-live-count">3</span>
+            </button>
+
+            <div class="snap-ring-row" aria-hidden="true">
+              <span><i></i></span>
+              <span><i></i></span>
+              <span><i></i></span>
+              <span><i></i></span>
+              <span><i></i></span>
             </div>
 
             <div class="teaser-grid" aria-label="Zensierte Story Preview">
@@ -191,19 +231,27 @@
             </div>
 
             <button class="account-card" type="button" data-paylink>
-              <p>VIP-Zugang</p>
+              <p>VIP Tresor</p>
               <div class="vip-content-meter" aria-hidden="true">
                 <span></span>
                 <span></span>
                 <span></span>
                 <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="vip-secret-shelf" aria-hidden="true">
+                <span class="secret-thumb is-video"></span>
+                <span class="secret-thumb"></span>
+                <span class="secret-thumb is-hot"></span>
+                <span class="secret-thumb is-video"></span>
               </div>
               <div class="blurred-line">
-                <span>Snap</span>
+                <span>VIP Snap</span>
                 <strong data-field="snap">jane.onlyvip</strong>
               </div>
               <div class="blurred-line">
-                <span>User</span>
+                <span>Member User</span>
                 <strong data-field="handle">@jane.private</strong>
               </div>
             </button>
@@ -337,6 +385,6 @@
 
     <div class="toast" data-toast role="status" aria-live="polite"></div>
 
-    <script src="app.js?v=vip-feel-36" defer></script>
+    <script src="app.js?v=vip-plus-1" defer></script>
   </body>
 </html>

@@ -9,8 +9,11 @@
   --line: rgba(16, 16, 16, 0.16);
   --black-card: #111111;
   --gold: #f7b919;
+  --deep-gold: #b67d05;
   --vip-pink: #ff4f9a;
   --vip-blue: #40dfff;
+  --vip-green: #2aff8f;
+  --glass: rgba(255, 255, 255, 0.62);
   --shadow: 0 18px 50px rgba(16, 16, 16, 0.16);
 }
 
@@ -20,6 +23,7 @@
 
 html {
   min-height: 100%;
+  overflow-x: hidden;
   scroll-behavior: smooth;
 }
 
@@ -45,15 +49,29 @@ a {
 
 .page-bg {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
   z-index: -2;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   background:
-    radial-gradient(circle at 78% 20%, rgba(255, 79, 154, 0.22), transparent 24%),
-    radial-gradient(circle at 22% 74%, rgba(64, 223, 255, 0.16), transparent 25%),
-    radial-gradient(circle at 52% 8%, rgba(255, 255, 255, 0.44), transparent 24%),
+    linear-gradient(118deg, rgba(16, 16, 16, 0.08) 0 10%, transparent 10% 23%, rgba(255, 79, 154, 0.12) 23% 33%, transparent 33% 64%, rgba(64, 223, 255, 0.13) 64% 74%, transparent 74%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34), transparent 44%),
     repeating-linear-gradient(90deg, rgba(16, 16, 16, 0.035) 0 1px, transparent 1px 34px),
     repeating-linear-gradient(0deg, rgba(16, 16, 16, 0.03) 0 1px, transparent 1px 34px),
     var(--snap);
+}
+
+.page-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.46;
+  background:
+    linear-gradient(135deg, transparent 0 46%, rgba(16, 16, 16, 0.08) 46% 47%, transparent 47% 100%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0 2px, transparent 2px 18px);
+  pointer-events: none;
 }
 
 .topbar,
@@ -87,7 +105,8 @@ main {
   place-items: center;
   border: 3px solid var(--ink);
   border-radius: 12px;
-  background: var(--snap);
+  background:
+    linear-gradient(135deg, var(--snap), #ffffff 42%, var(--gold));
   box-shadow: 4px 4px 0 var(--ink);
 }
 
@@ -134,31 +153,117 @@ main {
 .eyebrow {
   display: inline-flex;
   align-items: center;
+  gap: 9px;
   min-height: 36px;
   margin: 0 0 16px;
-  padding: 8px 14px;
+  padding: 6px 14px 6px 7px;
   border-radius: 10px;
-  background: var(--ink);
-  color: var(--snap);
+  border: 2px solid var(--ink);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.56), rgba(255, 252, 0, 0.22)),
+    var(--glass);
+  color: var(--ink);
   font-size: 0.92rem;
   font-weight: 950;
+  box-shadow: 4px 4px 0 rgba(16, 16, 16, 0.14);
+}
+
+.snap-plus-badge {
+  display: inline-grid;
+  min-width: 52px;
+  min-height: 26px;
+  place-items: center;
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, var(--black-card), #341121 58%, var(--vip-pink));
+  color: var(--snap);
+  font-size: 0.78rem;
 }
 
 h1 {
-  max-width: 10ch;
+  max-width: 11ch;
   margin: 0;
   font-size: clamp(3.4rem, 7vw, 6rem);
   line-height: 0.9;
   letter-spacing: 0;
+  text-shadow:
+    3px 3px 0 rgba(255, 255, 255, 0.86),
+    6px 6px 0 rgba(16, 16, 16, 0.12);
 }
 
 .lead {
   max-width: 560px;
   margin: 20px 0 0;
-  color: var(--muted);
+  color: rgba(16, 16, 16, 0.76);
   font-size: 1.22rem;
   font-weight: 750;
   line-height: 1.45;
+}
+
+.vip-status-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  max-width: 560px;
+  margin-top: 22px;
+}
+
+.vip-status-board div {
+  position: relative;
+  overflow: hidden;
+  min-height: 78px;
+  padding: 13px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.74), rgba(255, 252, 0, 0.2)),
+    var(--glass);
+  box-shadow: 5px 5px 0 rgba(16, 16, 16, 0.14);
+}
+
+.vip-status-board div::after {
+  content: "";
+  position: absolute;
+  right: -10px;
+  bottom: -10px;
+  width: 44px;
+  height: 44px;
+  border: 2px solid rgba(16, 16, 16, 0.18);
+  border-radius: 12px;
+  transform: rotate(12deg);
+}
+
+.vip-status-board span,
+.vip-status-board strong {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+.vip-status-board span {
+  color: rgba(16, 16, 16, 0.56);
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.vip-status-board strong {
+  margin-top: 8px;
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.05;
+}
+
+.vip-status-board div:nth-child(2) {
+  background:
+    linear-gradient(145deg, rgba(64, 223, 255, 0.28), rgba(255, 255, 255, 0.68)),
+    var(--glass);
+}
+
+.vip-status-board div:nth-child(3) {
+  background:
+    linear-gradient(145deg, rgba(255, 79, 154, 0.24), rgba(255, 255, 255, 0.68)),
+    var(--glass);
 }
 
 .vip-visual-row {
@@ -298,13 +403,24 @@ h1 {
 .unlock-strip span {
   min-height: 44px;
   padding: 11px 14px;
-  border: 1px solid var(--line);
+  border: 2px solid rgba(16, 16, 16, 0.18);
   border-radius: 10px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.46)),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(255, 252, 0, 0.3)),
     var(--card);
   font-weight: 900;
   backdrop-filter: blur(12px);
+}
+
+.unlock-strip span::before {
+  content: "";
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 8px;
+  border-radius: 999px;
+  background: var(--vip-green);
+  box-shadow: 0 0 0 4px rgba(42, 255, 143, 0.14);
 }
 
 .offer-panel {
@@ -405,6 +521,7 @@ h1 {
 }
 
 .primary-cta:focus-visible,
+.vip-live-card:focus-visible,
 .media-tile:focus-visible,
 .account-card:focus-visible {
   outline: 3px solid #ffffff;
@@ -520,33 +637,78 @@ h1 {
   pointer-events: none;
 }
 
+.vip-stage-badges {
+  position: absolute;
+  z-index: 4;
+  top: 78px;
+  left: -8px;
+  display: grid;
+  gap: 9px;
+  pointer-events: none;
+}
+
+.vip-stage-badges span {
+  width: max-content;
+  padding: 8px 11px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, var(--snap), #ffffff 58%, var(--gold));
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 950;
+  box-shadow: 4px 4px 0 rgba(16, 16, 16, 0.16);
+  transform: rotate(-3deg);
+}
+
+.vip-stage-badges span:nth-child(2) {
+  margin-left: 20px;
+  background:
+    linear-gradient(135deg, var(--black-card), #28121d 58%, var(--vip-pink));
+  color: var(--snap);
+  transform: rotate(4deg);
+}
+
+.vip-stage-badges span:nth-child(3) {
+  margin-left: 6px;
+  background:
+    linear-gradient(135deg, var(--vip-blue), #ffffff 68%);
+  transform: rotate(-2deg);
+}
+
 .jane-hero {
   position: absolute;
   z-index: 2;
-  left: -176px;
-  bottom: 2px;
-  width: 196px;
+  left: -196px;
+  bottom: -6px;
+  width: 224px;
   border: 0;
   border-radius: 0;
   background: transparent;
-  filter: drop-shadow(10px 12px 0 rgba(16, 16, 16, 0.2)) drop-shadow(0 18px 28px rgba(16, 16, 16, 0.22));
+  filter:
+    drop-shadow(12px 12px 0 rgba(255, 252, 0, 0.48))
+    drop-shadow(0 18px 28px rgba(16, 16, 16, 0.24));
   pointer-events: none;
 }
 
 .phone-shell {
   position: relative;
   width: min(100%, 392px);
-  min-height: 668px;
+  min-height: 696px;
   margin-left: auto;
   padding: 16px;
   border: 3px solid var(--ink);
-  border-radius: 20px;
+  border-radius: 26px;
   background:
-    linear-gradient(145deg, rgba(255, 252, 0, 0.16), transparent 22%),
-    radial-gradient(circle at 82% 8%, rgba(255, 79, 154, 0.32), transparent 26%),
+    linear-gradient(145deg, rgba(255, 252, 0, 0.22), transparent 22%),
+    linear-gradient(18deg, transparent 0 54%, rgba(64, 223, 255, 0.18) 54% 66%, transparent 66%),
+    linear-gradient(145deg, transparent 0 68%, rgba(255, 79, 154, 0.2) 68%),
     var(--black-card);
   color: #ffffff;
-  box-shadow: 10px 10px 0 rgba(16, 16, 16, 0.2), var(--shadow);
+  box-shadow:
+    0 0 0 7px rgba(255, 252, 0, 0.22),
+    12px 12px 0 rgba(16, 16, 16, 0.22),
+    var(--shadow);
 }
 
 .phone-shell::before {
@@ -558,7 +720,22 @@ h1 {
   pointer-events: none;
 }
 
+.phone-shell::after {
+  content: "VIP";
+  position: absolute;
+  top: 74px;
+  right: 22px;
+  z-index: 0;
+  color: rgba(255, 255, 255, 0.05);
+  font-size: 6rem;
+  font-weight: 950;
+  line-height: 1;
+  pointer-events: none;
+}
+
 .phone-top {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -580,6 +757,7 @@ h1 {
   color: var(--ink);
   font-size: 0.82rem;
   font-weight: 950;
+  box-shadow: 0 0 18px rgba(255, 252, 0, 0.26);
 }
 
 .status-dot {
@@ -587,12 +765,126 @@ h1 {
   height: 10px;
   border-radius: 999px;
   background: var(--snap);
+  box-shadow: 0 0 0 5px rgba(255, 252, 0, 0.14), 0 0 18px rgba(255, 252, 0, 0.72);
+}
+
+.vip-live-card {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 76px;
+  margin-top: 14px;
+  padding: 11px;
+  border: 1px solid rgba(255, 252, 0, 0.22);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(255, 252, 0, 0.18), rgba(255, 255, 255, 0.06)),
+    rgba(255, 255, 255, 0.07);
+  color: #ffffff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.vip-live-card strong,
+.vip-live-card small {
+  display: block;
+}
+
+.vip-live-card strong {
+  font-size: 0.92rem;
+  font-weight: 950;
+  line-height: 1.15;
+}
+
+.vip-live-card small {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 0.74rem;
+  font-weight: 850;
+}
+
+.vip-live-avatar {
+  width: 48px;
+  height: 48px;
+  border: 2px solid var(--snap);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(16, 16, 16, 0), rgba(16, 16, 16, 0.42)),
+    url("assets/jane-story-hero.png") 52% 36% / 210% auto no-repeat;
+  filter: saturate(1.2);
+}
+
+.vip-live-count {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--vip-pink);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 950;
+  box-shadow: 0 0 0 5px rgba(255, 79, 154, 0.16);
+}
+
+.snap-ring-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+.snap-ring-row span {
+  display: grid;
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border: 2px solid var(--snap);
+  border-radius: 999px;
+  background:
+    conic-gradient(from 20deg, var(--snap), var(--vip-pink), var(--vip-blue), var(--snap));
+}
+
+.snap-ring-row i {
+  display: block;
+  width: 42px;
+  height: 42px;
+  border: 3px solid var(--black-card);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(16, 16, 16, 0), rgba(16, 16, 16, 0.56)),
+    url("assets/jane-story-hero.png") center / 230% auto no-repeat;
+}
+
+.snap-ring-row span:nth-child(2) i {
+  background-position: 28% 40%;
+}
+
+.snap-ring-row span:nth-child(3) i {
+  background-position: 72% 48%;
+}
+
+.snap-ring-row span:nth-child(4) i {
+  background-position: 44% 72%;
+}
+
+.snap-ring-row span:nth-child(5) i {
+  background-position: 82% 38%;
 }
 
 .teaser-grid {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-rows: 104px;
+  grid-auto-rows: 92px;
   gap: 10px;
   margin-top: 14px;
 }
@@ -601,13 +893,14 @@ h1 {
   position: relative;
   overflow: hidden;
   min-width: 0;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px;
   background:
-    linear-gradient(180deg, rgba(16, 16, 16, 0.05), rgba(16, 16, 16, 0.88)),
+    linear-gradient(180deg, rgba(16, 16, 16, 0.02), rgba(16, 16, 16, 0.9)),
     url("assets/jane-story-hero.png") center / cover no-repeat;
   cursor: pointer;
   min-height: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 252, 0, 0.08);
 }
 
 .media-tile::before {
@@ -615,7 +908,7 @@ h1 {
   position: absolute;
   inset: 0;
   background: inherit;
-  filter: blur(14px) saturate(1.2);
+  filter: blur(16px) saturate(1.36) contrast(1.08);
   transform: scale(1.1);
 }
 
@@ -624,8 +917,8 @@ h1 {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 22% 18%, rgba(255, 252, 0, 0.18), transparent 28%),
-    rgba(16, 16, 16, 0.2);
+    linear-gradient(135deg, rgba(255, 252, 0, 0.2), transparent 42%),
+    linear-gradient(0deg, rgba(16, 16, 16, 0.58), rgba(16, 16, 16, 0.08));
 }
 
 .tile-large {
@@ -668,7 +961,7 @@ h1 {
   width: 128px;
   padding: 7px 0;
   background:
-    linear-gradient(90deg, var(--vip-pink), var(--snap));
+    linear-gradient(90deg, var(--vip-pink), var(--snap), var(--vip-blue));
   color: var(--ink);
   font-size: 0.72rem;
   font-weight: 950;
@@ -716,14 +1009,17 @@ h1 {
 }
 
 .account-card {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   margin-top: 12px;
   padding: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
+  border: 1px solid rgba(255, 252, 0, 0.22);
+  border-radius: 18px;
   background:
-    linear-gradient(135deg, rgba(255, 252, 0, 0.14), rgba(255, 255, 255, 0.05)),
+    linear-gradient(135deg, rgba(255, 252, 0, 0.18), rgba(255, 255, 255, 0.04)),
+    linear-gradient(90deg, transparent, rgba(64, 223, 255, 0.08), transparent),
     rgba(255, 255, 255, 0.06);
   color: #ffffff;
   text-align: left;
@@ -732,7 +1028,7 @@ h1 {
 
 .vip-content-meter {
   display: grid;
-  grid-template-columns: 1.1fr 0.85fr 1.35fr 0.72fr;
+  grid-template-columns: 1.1fr 0.85fr 1.35fr 0.72fr 1fr 0.9fr;
   gap: 7px;
   margin-bottom: 13px;
 }
@@ -758,6 +1054,58 @@ h1 {
 
 .vip-content-meter span:nth-child(4) {
   background-color: rgba(64, 223, 255, 0.22);
+}
+
+.vip-content-meter span:nth-child(5) {
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
+.vip-content-meter span:nth-child(6) {
+  background-color: rgba(255, 252, 0, 0.18);
+}
+
+.vip-secret-shelf {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 4px 0 12px;
+}
+
+.secret-thumb {
+  position: relative;
+  overflow: hidden;
+  height: 54px;
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(16, 16, 16, 0.02), rgba(16, 16, 16, 0.72)),
+    url("assets/jane-story-hero.png") center / 260% auto no-repeat;
+  filter: blur(2px) saturate(1.18);
+}
+
+.secret-thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(255, 252, 0, 0.2), transparent 48%),
+    rgba(16, 16, 16, 0.2);
+}
+
+.secret-thumb.is-video::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  right: 8px;
+  bottom: 8px;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 10px solid var(--snap);
+}
+
+.secret-thumb.is-hot {
+  background-position: 78% 44%;
 }
 
 .account-card p {
@@ -1218,11 +1566,26 @@ h1 {
     right: -16px;
     bottom: auto;
     top: -72px;
-    width: 154px;
+    width: 168px;
   }
 
   .details {
     grid-template-columns: 1fr;
+  }
+
+  .vip-stage-badges {
+    top: 6px;
+    left: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    max-width: calc(100% - 180px);
+  }
+
+  .vip-stage-badges span,
+  .vip-stage-badges span:nth-child(2),
+  .vip-stage-badges span:nth-child(3) {
+    margin-left: 0;
+    transform: none;
   }
 }
 
@@ -1248,7 +1611,7 @@ h1 {
   }
 
   h1 {
-    max-width: 9.6ch;
+    max-width: 11ch;
     font-size: 3.2rem;
   }
 
@@ -1259,6 +1622,20 @@ h1 {
   .offer-panel {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
+  }
+
+  .vip-status-board {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .vip-status-board div {
+    min-height: 58px;
+    padding: 10px 12px;
+  }
+
+  .vip-status-board strong {
+    margin-top: 4px;
   }
 
   .offer-timer,
@@ -1303,18 +1680,58 @@ h1 {
 
   .phone-shell {
     width: 100%;
-    min-height: 540px;
+    min-height: 650px;
     padding: 14px;
+    box-shadow:
+      0 0 0 5px rgba(255, 252, 0, 0.2),
+      8px 8px 0 rgba(16, 16, 16, 0.18),
+      var(--shadow);
+  }
+
+  .vip-stage-badges {
+    position: relative;
+    top: auto;
+    left: auto;
+    max-width: none;
+    margin-bottom: 8px;
+  }
+
+  .vip-live-card {
+    grid-template-columns: 42px minmax(0, 1fr) 32px;
+    gap: 8px;
+    min-height: 68px;
+  }
+
+  .vip-live-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+  }
+
+  .vip-live-count {
+    width: 32px;
+    height: 32px;
+  }
+
+  .snap-ring-row span {
+    flex-basis: 48px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .snap-ring-row i {
+    width: 36px;
+    height: 36px;
   }
 
   .teaser-grid {
-    grid-auto-rows: 116px;
+    grid-auto-rows: 96px;
   }
 
   .jane-hero {
-    top: -58px;
-    right: -8px;
-    width: 124px;
+    top: 10px;
+    right: 2px;
+    width: 106px;
   }
 
   .vip-visual-row {
@@ -1340,6 +1757,10 @@ h1 {
   .vip-live-orbit span:nth-child(2) {
     width: 28px;
     height: 28px;
+  }
+
+  .vip-secret-shelf {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .admin-panel,
