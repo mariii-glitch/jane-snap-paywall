@@ -5,7 +5,7 @@ const path = require("node:path");
 const PORT = Number(process.env.PORT || 8183);
 const HOST = process.env.HOST || "0.0.0.0";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "123s";
-const CANONICAL_RENDER_HOST = "jane-whatsapp-standard.onrender.com";
+const CANONICAL_RENDER_HOST = "jane-whatsapp.onrender.com";
 
 const DEFAULT_RULES = Object.freeze({
   offerDurationMs: 3 * 60 * 1000,
