@@ -17,7 +17,7 @@ const DEFAULT_RULES = Object.freeze({
 });
 
 const DEFAULT_SETTINGS = Object.freeze({
-  unlockUrl: "https://buy.stripe.com/8x2dRb0Pz54AgHi6smasg02",
+  unlockUrl: "",
 });
 
 const MIME_TYPES = {
@@ -64,7 +64,7 @@ function normalizeRules(rawRules) {
 
 function normalizeSettings(rawSettings) {
   const unlockUrl = typeof rawSettings?.unlockUrl === "string" ? rawSettings.unlockUrl.trim() : "";
-  if (!isValidPaymentUrl(unlockUrl)) return null;
+  if (unlockUrl && !isValidPaymentUrl(unlockUrl)) return null;
 
   return { unlockUrl };
 }

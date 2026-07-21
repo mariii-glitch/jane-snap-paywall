@@ -6,7 +6,7 @@ const DEFAULT_CONFIG = Object.freeze({
   videos: 8,
   price: "CHF 36.-",
   oldPrice: "",
-  unlockUrl: "https://buy.stripe.com/8x2dRb0Pz54AgHi6smasg02",
+  unlockUrl: "",
   offerDurationMs: 3 * 60 * 1000,
   lockDurationMs: 3 * 60 * 1000,
   timerEpochMs: Date.UTC(2026, 6, 15, 0, 0, 0),
@@ -106,6 +106,7 @@ function showToast(message) {
 }
 
 function isConfiguredUnlockUrl(url) {
+  if (!url) return false;
   return isValidPaymentUrl(url);
 }
 
@@ -143,7 +144,7 @@ function normalizeTimerRules(rawRules) {
 
 function normalizeSiteSettings(rawSettings) {
   const unlockUrl = typeof rawSettings?.unlockUrl === "string" ? rawSettings.unlockUrl.trim() : "";
-  if (!isValidPaymentUrl(unlockUrl)) return null;
+  if (unlockUrl && !isValidPaymentUrl(unlockUrl)) return null;
 
   return { unlockUrl };
 }
@@ -753,7 +754,7 @@ function goToUnlock() {
     return;
   }
 
-  showToast("Unlock-Link noch in app.js eintragen. Danach führt jeder gesperrte Bereich direkt weiter.");
+  showToast("Zahlungslink ist aktuell nicht aktiv.");
 }
 
 function setupAdminPanel() {
