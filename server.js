@@ -14,6 +14,7 @@ const DEFAULT_RULES = Object.freeze({
   openSlots: 13,
   totalSlots: 30,
   manualLock: false,
+  unlockUrl: "https://buy.stripe.com/dRm28t8i1aoU62E3gaasg03",
 });
 
 const MIME_TYPES = {
@@ -34,6 +35,16 @@ function clampInteger(value, min, max) {
   return Math.round(clampNumber(value, min, max));
 }
 
+function isConfiguredUnlockUrl(url) {
+  return /^https:\/\/buy\.stripe\.com\/.+/i.test(url);
+}
+
+function normalizeUnlockUrl(url, fallback = DEFAULT_RULES.unlockUrl) {
+  const value = String(url || "").trim();
+  const nextUrl = value || fallback;
+  return isConfiguredUnlockUrl(nextUrl) ? nextUrl : null;
+}
+
 function normalizeRules(rawRules) {
   if (!rawRules || typeof rawRules !== "object") return null;
 
@@ -43,8 +54,9 @@ function normalizeRules(rawRules) {
   const openSlots = clampInteger(Number(rawRules.openSlots), 1, totalSlots);
   const timerEpochMs = Number(rawRules.timerEpochMs);
   const manualLock = rawRules.manualLock === true;
+  const unlockUrl = normalizeUnlockUrl(rawRules.unlockUrl, DEFAULT_RULES.unlockUrl);
 
-  if (![offerDurationMs, lockDurationMs, totalSlots, openSlots, timerEpochMs].every(Number.isFinite)) {
+  if (![offerDurationMs, lockDurationMs, totalSlots, openSlots, timerEpochMs].every(Number.isFinite) || !unlockUrl) {
     return null;
   }
 
@@ -55,6 +67,7 @@ function normalizeRules(rawRules) {
     openSlots,
     totalSlots,
     manualLock,
+    unlockUrl,
   };
 }
 

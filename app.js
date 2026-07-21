@@ -26,7 +26,7 @@ const CANONICAL_RENDER_HOST = "jane-snap-private-story.onrender.com";
 
 if (
   window.location.hostname.endsWith(".onrender.com") &&
-  window.location.hostname.startsWith("jane-snap-") &&
+  window.location.hostname.startsWith("jane-") &&
   window.location.hostname !== CANONICAL_RENDER_HOST
 ) {
   window.location.replace(`https://${CANONICAL_RENDER_HOST}${window.location.pathname}${window.location.search}${window.location.hash}`);
@@ -71,6 +71,7 @@ const adminInputs = {
   openSlots: document.querySelector('[data-admin-input="openSlots"]'),
   totalSlots: document.querySelector('[data-admin-input="totalSlots"]'),
   timerEpoch: document.querySelector('[data-admin-input="timerEpoch"]'),
+  unlockUrl: document.querySelector('[data-admin-input="unlockUrl"]'),
 };
 const normalizedPath = window.location.pathname.replace(/\/+$/, "");
 const isAdminMode =
@@ -106,6 +107,12 @@ function isConfiguredUnlockUrl(url) {
   return /^https:\/\/buy\.stripe\.com\/.+/i.test(url);
 }
 
+function normalizeUnlockUrl(url, fallback = DEFAULT_CONFIG.unlockUrl) {
+  const value = String(url || "").trim();
+  const nextUrl = value || fallback;
+  return isConfiguredUnlockUrl(nextUrl) ? nextUrl : null;
+}
+
 function clampNumber(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
@@ -123,8 +130,9 @@ function normalizeTimerRules(rawRules) {
   const openSlots = clampInteger(Number(rawRules.openSlots), 1, totalSlots);
   const timerEpochMs = Number(rawRules.timerEpochMs);
   const manualLock = rawRules.manualLock === true;
+  const unlockUrl = normalizeUnlockUrl(rawRules.unlockUrl, DEFAULT_CONFIG.unlockUrl);
 
-  if (![offerDurationMs, lockDurationMs, totalSlots, openSlots, timerEpochMs].every(Number.isFinite)) {
+  if (![offerDurationMs, lockDurationMs, totalSlots, openSlots, timerEpochMs].every(Number.isFinite) || !unlockUrl) {
     return null;
   }
 
@@ -135,6 +143,7 @@ function normalizeTimerRules(rawRules) {
     openSlots,
     totalSlots,
     manualLock,
+    unlockUrl,
   };
 }
 
@@ -187,6 +196,7 @@ function getCurrentTimerRules() {
     openSlots: CONFIG.openSlots,
     totalSlots: CONFIG.totalSlots,
     manualLock: CONFIG.manualLock,
+    unlockUrl: CONFIG.unlockUrl,
   };
 }
 
@@ -210,6 +220,19 @@ function parseDateTimeInput(input, fallback) {
   return Number.isFinite(timestamp) ? timestamp : fallback;
 }
 
+function parseUnlockUrlInput(input, fallback) {
+  return String(input?.value || "").trim() || fallback;
+}
+
+function getAdminValidationMessage() {
+  const unlockUrl = String(adminInputs.unlockUrl?.value || "").trim();
+  if (unlockUrl && !isConfiguredUnlockUrl(unlockUrl)) {
+    return "Bitte gültigen Stripe-Zahlungslink eintragen.";
+  }
+
+  return "Bitte gültige Werte eintragen.";
+}
+
 function readAdminFormRules(overrides = {}) {
   return normalizeTimerRules({
     offerDurationMs: parseNumberInput(adminInputs.offerMinutes, toMinutes(CONFIG.offerDurationMs)) * 60 * 1000,
@@ -218,6 +241,7 @@ function readAdminFormRules(overrides = {}) {
     openSlots: parseNumberInput(adminInputs.openSlots, CONFIG.openSlots),
     totalSlots: parseNumberInput(adminInputs.totalSlots, CONFIG.totalSlots),
     manualLock: CONFIG.manualLock,
+    unlockUrl: parseUnlockUrlInput(adminInputs.unlockUrl, CONFIG.unlockUrl),
     ...overrides,
   });
 }
@@ -321,6 +345,9 @@ function updateAdminForm() {
   adminInputs.openSlots.value = CONFIG.openSlots;
   adminInputs.totalSlots.value = CONFIG.totalSlots;
   adminInputs.timerEpoch.value = toLocalDateTimeValue(CONFIG.timerEpochMs);
+  if (adminInputs.unlockUrl) {
+    adminInputs.unlockUrl.value = CONFIG.unlockUrl;
+  }
   updateAdminModeStatus();
   updateGeneratedLink();
 }
@@ -346,7 +373,7 @@ function applyTimerRules(rules) {
 
 function applyAndStoreTimerRules(rules, message) {
   if (!applyTimerRules(rules)) {
-    setAdminStatus("Bitte gültige Werte eintragen.");
+    setAdminStatus(getAdminValidationMessage());
     return false;
   }
 
@@ -491,7 +518,7 @@ async function setTimerWindow(active) {
   const nextRules = normalizeTimerRules({ ...rules, timerEpochMs, manualLock: false });
 
   if (!nextRules) {
-    setAdminStatus("Bitte gültige Werte eintragen.");
+    setAdminStatus(getAdminValidationMessage());
     return;
   }
 
@@ -512,7 +539,7 @@ async function setManualLock(enabled) {
   const nextRules = normalizeTimerRules({ ...rules, timerEpochMs, manualLock: enabled });
 
   if (!nextRules) {
-    setAdminStatus("Bitte gültige Werte eintragen.");
+    setAdminStatus(getAdminValidationMessage());
     return;
   }
 
@@ -530,7 +557,7 @@ async function setManualLock(enabled) {
 function applyRulesAndOpenCleanLink() {
   const rules = readAdminFormRules();
   if (!rules) {
-    setAdminStatus("Bitte gültige Werte eintragen.");
+    setAdminStatus(getAdminValidationMessage());
     return;
   }
 
@@ -559,7 +586,7 @@ async function applyRulesDirectlyLive() {
   );
 
   if (!nextRules) {
-    setAdminStatus("Bitte gültige Werte eintragen.");
+    setAdminStatus(getAdminValidationMessage());
     return;
   }
 
@@ -579,7 +606,7 @@ async function applyRulesDirectlyLive() {
 async function copyHomeLinkAndSaveRules() {
   const rules = readAdminFormRules();
   if (!rules) {
-    setAdminStatus("Bitte gültige Werte eintragen.");
+    setAdminStatus(getAdminValidationMessage());
     return;
   }
 
@@ -686,7 +713,7 @@ function setupAdminPanel() {
     event.preventDefault();
     const rules = readAdminFormRules();
     if (!rules) {
-      setAdminStatus("Bitte gültige Werte eintragen.");
+      setAdminStatus(getAdminValidationMessage());
       return;
     }
 
@@ -718,7 +745,7 @@ function setupAdminPanel() {
   adminCopy?.addEventListener("click", async () => {
     const rules = readAdminFormRules();
     if (!rules) {
-      setAdminStatus("Bitte gültige Werte eintragen.");
+      setAdminStatus(getAdminValidationMessage());
       return;
     }
 

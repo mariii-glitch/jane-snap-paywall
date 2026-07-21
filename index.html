@@ -276,6 +276,17 @@
             <input type="datetime-local" data-admin-input="timerEpoch" />
             <small>Dieser Zeitanker läuft weiter, auch wenn Telegram geschlossen wird.</small>
           </label>
+          <label class="admin-wide">
+            <span>Zahlungslink</span>
+            <input
+              type="url"
+              inputmode="url"
+              autocomplete="off"
+              placeholder="https://buy.stripe.com/..."
+              data-admin-input="unlockUrl"
+            />
+            <small>Alle Unlock-Buttons führen auf diesen Stripe-Link.</small>
+          </label>
 
           <div class="admin-actions">
             <button type="button" data-admin-now>Timer ab jetzt</button>
@@ -303,6 +314,6 @@
 
     <div class="toast" data-toast role="status" aria-live="polite"></div>
 
-    <script src="app.js?v=admin-lock-fix" defer></script>
+    <script src="app.js?v=admin-payment-link" defer></script>
   </body>
 </html>
