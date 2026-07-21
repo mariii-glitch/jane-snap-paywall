@@ -234,7 +234,8 @@ function parseDateTimeInput(input, fallback) {
 }
 
 function parseUnlockUrlInput(input, fallback) {
-  return String(input?.value || "").trim() || fallback;
+  if (!input) return fallback;
+  return String(input.value || "").trim();
 }
 
 function getAdminValidationMessage() {
