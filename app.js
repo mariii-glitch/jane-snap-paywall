@@ -6,7 +6,7 @@ const DEFAULT_CONFIG = Object.freeze({
   videos: 4,
   price: "CHF 8.-",
   oldPrice: "CHF 29.-",
-  unlockUrl: "https://buy.stripe.com/dRm28t8i1aoU62E3gaasg03",
+  unlockUrl: "",
   offerDurationMs: 3 * 60 * 1000,
   lockDurationMs: 3 * 60 * 1000,
   timerEpochMs: Date.UTC(2026, 6, 15, 0, 0, 0),
@@ -104,12 +104,18 @@ function showToast(message) {
 }
 
 function isConfiguredUnlockUrl(url) {
-  return /^https:\/\/buy\.stripe\.com\/.+/i.test(url);
+  try {
+    const parsedUrl = new URL(String(url || "").trim());
+    return parsedUrl.protocol === "https:" && parsedUrl.hostname.length > 0;
+  } catch {
+    return false;
+  }
 }
 
 function normalizeUnlockUrl(url, fallback = DEFAULT_CONFIG.unlockUrl) {
   const value = String(url || "").trim();
   const nextUrl = value || fallback;
+  if (!nextUrl) return "";
   return isConfiguredUnlockUrl(nextUrl) ? nextUrl : null;
 }
 
@@ -132,7 +138,7 @@ function normalizeTimerRules(rawRules) {
   const manualLock = rawRules.manualLock === true;
   const unlockUrl = normalizeUnlockUrl(rawRules.unlockUrl, DEFAULT_CONFIG.unlockUrl);
 
-  if (![offerDurationMs, lockDurationMs, totalSlots, openSlots, timerEpochMs].every(Number.isFinite) || !unlockUrl) {
+  if (![offerDurationMs, lockDurationMs, totalSlots, openSlots, timerEpochMs].every(Number.isFinite) || unlockUrl === null) {
     return null;
   }
 
@@ -227,7 +233,7 @@ function parseUnlockUrlInput(input, fallback) {
 function getAdminValidationMessage() {
   const unlockUrl = String(adminInputs.unlockUrl?.value || "").trim();
   if (unlockUrl && !isConfiguredUnlockUrl(unlockUrl)) {
-    return "Bitte gültigen Stripe-Zahlungslink eintragen.";
+    return "Bitte gültigen Zahlungslink mit https:// eintragen.";
   }
 
   return "Bitte gültige Werte eintragen.";
@@ -698,7 +704,7 @@ function goToUnlock() {
     return;
   }
 
-  showToast("Unlock-Link noch in app.js eintragen. Danach führt jeder gesperrte Bereich direkt weiter.");
+  showToast("Zahlungslink ist noch nicht hinterlegt.");
 }
 
 function setupAdminPanel() {

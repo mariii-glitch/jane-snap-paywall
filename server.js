@@ -14,7 +14,7 @@ const DEFAULT_RULES = Object.freeze({
   openSlots: 13,
   totalSlots: 30,
   manualLock: false,
-  unlockUrl: "https://buy.stripe.com/dRm28t8i1aoU62E3gaasg03",
+  unlockUrl: "",
 });
 
 const MIME_TYPES = {
@@ -36,12 +36,18 @@ function clampInteger(value, min, max) {
 }
 
 function isConfiguredUnlockUrl(url) {
-  return /^https:\/\/buy\.stripe\.com\/.+/i.test(url);
+  try {
+    const parsedUrl = new URL(String(url || "").trim());
+    return parsedUrl.protocol === "https:" && parsedUrl.hostname.length > 0;
+  } catch {
+    return false;
+  }
 }
 
 function normalizeUnlockUrl(url, fallback = DEFAULT_RULES.unlockUrl) {
   const value = String(url || "").trim();
   const nextUrl = value || fallback;
+  if (!nextUrl) return "";
   return isConfiguredUnlockUrl(nextUrl) ? nextUrl : null;
 }
 
@@ -56,7 +62,7 @@ function normalizeRules(rawRules) {
   const manualLock = rawRules.manualLock === true;
   const unlockUrl = normalizeUnlockUrl(rawRules.unlockUrl, DEFAULT_RULES.unlockUrl);
 
-  if (![offerDurationMs, lockDurationMs, totalSlots, openSlots, timerEpochMs].every(Number.isFinite) || !unlockUrl) {
+  if (![offerDurationMs, lockDurationMs, totalSlots, openSlots, timerEpochMs].every(Number.isFinite) || unlockUrl === null) {
     return null;
   }
 
