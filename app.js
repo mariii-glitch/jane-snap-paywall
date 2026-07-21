@@ -21,6 +21,7 @@ const ADMIN_STORAGE_KEY = "janeTimerAdminRules";
 const ADMIN_PASSWORD = "123s";
 const TELEGRAM_WAITLIST_URL = "https://t.me/+df8nvcSFeAM0MDBk";
 const CONFIG_API_ENDPOINT = "/api/config";
+const REMOVED_PAYMENT_HOSTS = new Set([["buy", "stripe", "com"].join(".")]);
 
 const CANONICAL_RENDER_HOST = "jane-snap-private-story.onrender.com";
 
@@ -106,7 +107,7 @@ function showToast(message) {
 function isConfiguredUnlockUrl(url) {
   try {
     const parsedUrl = new URL(String(url || "").trim());
-    return parsedUrl.protocol === "https:" && parsedUrl.hostname.length > 0;
+    return parsedUrl.protocol === "https:" && parsedUrl.hostname.length > 0 && !REMOVED_PAYMENT_HOSTS.has(parsedUrl.hostname);
   } catch {
     return false;
   }
@@ -116,6 +117,12 @@ function normalizeUnlockUrl(url, fallback = DEFAULT_CONFIG.unlockUrl) {
   const value = String(url || "").trim();
   const nextUrl = value || fallback;
   if (!nextUrl) return "";
+  try {
+    const parsedUrl = new URL(nextUrl);
+    if (REMOVED_PAYMENT_HOSTS.has(parsedUrl.hostname)) return "";
+  } catch {
+    // Invalid links are handled by the validator below.
+  }
   return isConfiguredUnlockUrl(nextUrl) ? nextUrl : null;
 }
 

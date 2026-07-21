@@ -6,6 +6,7 @@ const PORT = Number(process.env.PORT || 8183);
 const HOST = process.env.HOST || "0.0.0.0";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "123s";
 const CANONICAL_RENDER_HOST = "jane-snap-private-story.onrender.com";
+const REMOVED_PAYMENT_HOSTS = new Set([["buy", "stripe", "com"].join(".")]);
 
 const DEFAULT_RULES = Object.freeze({
   offerDurationMs: 3 * 60 * 1000,
@@ -38,7 +39,7 @@ function clampInteger(value, min, max) {
 function isConfiguredUnlockUrl(url) {
   try {
     const parsedUrl = new URL(String(url || "").trim());
-    return parsedUrl.protocol === "https:" && parsedUrl.hostname.length > 0;
+    return parsedUrl.protocol === "https:" && parsedUrl.hostname.length > 0 && !REMOVED_PAYMENT_HOSTS.has(parsedUrl.hostname);
   } catch {
     return false;
   }
@@ -48,6 +49,12 @@ function normalizeUnlockUrl(url, fallback = DEFAULT_RULES.unlockUrl) {
   const value = String(url || "").trim();
   const nextUrl = value || fallback;
   if (!nextUrl) return "";
+  try {
+    const parsedUrl = new URL(nextUrl);
+    if (REMOVED_PAYMENT_HOSTS.has(parsedUrl.hostname)) return "";
+  } catch {
+    // Invalid links are handled by the validator below.
+  }
   return isConfiguredUnlockUrl(nextUrl) ? nextUrl : null;
 }
 
