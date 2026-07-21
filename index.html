@@ -320,9 +320,23 @@
           <div class="admin-section-title">
             <span>3</span>
             <strong>Speichern & Link</strong>
-            <small>Hauptlink ist kurz. Link mit Einstellungen übernimmt Timer und Plätze direkt im Link.</small>
+            <small>Hauptlink ist kurz. Zahlungslink gilt live für alle Freischalten-Buttons.</small>
           </div>
 
+          <label class="admin-wide">
+            <span>Zahlungslink</span>
+            <input
+              type="url"
+              inputmode="url"
+              autocomplete="off"
+              autocapitalize="none"
+              autocorrect="off"
+              spellcheck="false"
+              placeholder="https://buy.stripe.com/..."
+              data-admin-input="paymentUrl"
+            />
+            <small>Alle VIP freischalten Buttons öffnen diesen Link.</small>
+          </label>
           <input class="admin-link-output" type="text" data-admin-link readonly aria-label="Teilbarer Link" />
           <div class="admin-actions admin-actions-link">
             <button type="button" data-admin-apply-live>Live speichern</button>
@@ -337,6 +351,6 @@
 
     <div class="toast" data-toast role="status" aria-live="polite"></div>
 
-    <script src="app.js?v=vip-feel-36" defer></script>
+    <script src="app.js?v=vip-admin-payment-1" defer></script>
   </body>
 </html>

@@ -18,6 +18,7 @@ const DEFAULT_CONFIG = Object.freeze({
 const CONFIG = { ...DEFAULT_CONFIG };
 const CAMPAIGN_PARAM = "cfg";
 const ADMIN_STORAGE_KEY = "janeTimerAdminRules";
+const ADMIN_SETTINGS_STORAGE_KEY = "janeAdminSettings";
 const ADMIN_PASSWORD = "123s";
 const TELEGRAM_WAITLIST_URL = "https://t.me/+df8nvcSFeAM0MDBk";
 const CONFIG_API_ENDPOINT = "/api/config";
@@ -72,6 +73,7 @@ const adminInputs = {
   openSlots: document.querySelector('[data-admin-input="openSlots"]'),
   totalSlots: document.querySelector('[data-admin-input="totalSlots"]'),
   timerEpoch: document.querySelector('[data-admin-input="timerEpoch"]'),
+  paymentUrl: document.querySelector('[data-admin-input="paymentUrl"]'),
 };
 const normalizedPath = window.location.pathname.replace(/\/+$/, "");
 const isAdminMode =
@@ -104,7 +106,7 @@ function showToast(message) {
 }
 
 function isConfiguredUnlockUrl(url) {
-  return /^https:\/\/buy\.stripe\.com\/.+/i.test(url);
+  return isValidPaymentUrl(url);
 }
 
 function clampNumber(value, min, max) {
@@ -139,6 +141,22 @@ function normalizeTimerRules(rawRules) {
   };
 }
 
+function normalizeSiteSettings(rawSettings) {
+  const unlockUrl = typeof rawSettings?.unlockUrl === "string" ? rawSettings.unlockUrl.trim() : "";
+  if (!isValidPaymentUrl(unlockUrl)) return null;
+
+  return { unlockUrl };
+}
+
+function isValidPaymentUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && Boolean(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 function encodeTimerRules(rules) {
   return window
     .btoa(JSON.stringify(rules))
@@ -170,9 +188,27 @@ function readStoredAdminRules() {
   }
 }
 
+function readStoredAdminSettings() {
+  try {
+    return normalizeSiteSettings(JSON.parse(window.localStorage.getItem(ADMIN_SETTINGS_STORAGE_KEY)));
+  } catch {
+    return null;
+  }
+}
+
 function storeAdminRules(rules) {
   try {
     window.localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(rules));
+  } catch {
+    return false;
+  }
+
+  return true;
+}
+
+function storeAdminSettings(settings) {
+  try {
+    window.localStorage.setItem(ADMIN_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
   } catch {
     return false;
   }
@@ -188,6 +224,12 @@ function getCurrentTimerRules() {
     openSlots: CONFIG.openSlots,
     totalSlots: CONFIG.totalSlots,
     manualLock: CONFIG.manualLock,
+  };
+}
+
+function getCurrentSiteSettings() {
+  return {
+    unlockUrl: CONFIG.unlockUrl,
   };
 }
 
@@ -210,6 +252,13 @@ function readAdminFormRules(overrides = {}) {
     openSlots: Number(adminInputs.openSlots?.value),
     totalSlots: Number(adminInputs.totalSlots?.value),
     manualLock: CONFIG.manualLock,
+    ...overrides,
+  });
+}
+
+function readAdminFormSettings(overrides = {}) {
+  return normalizeSiteSettings({
+    unlockUrl: adminInputs.paymentUrl?.value,
     ...overrides,
   });
 }
@@ -260,14 +309,18 @@ async function fetchConfigApi(path = CONFIG_API_ENDPOINT, options = {}) {
   }
 }
 
-async function readGlobalRules() {
+async function readGlobalConfig() {
   const payload = await fetchConfigApi();
-  return normalizeTimerRules(payload?.rules || payload);
+  return {
+    rules: normalizeTimerRules(payload?.rules || payload),
+    settings: normalizeSiteSettings(payload?.settings),
+  };
 }
 
-async function publishGlobalRules(rules) {
+async function publishGlobalConfig(rules, settings) {
   const normalizedRules = normalizeTimerRules(rules);
-  if (!normalizedRules) return { saved: false, reason: "invalid" };
+  const normalizedSettings = normalizeSiteSettings(settings);
+  if (!normalizedRules || !normalizedSettings) return { saved: false, reason: "invalid" };
 
   const payload = await fetchConfigApi(CONFIG_API_ENDPOINT, {
     method: "POST",
@@ -277,13 +330,15 @@ async function publishGlobalRules(rules) {
     body: JSON.stringify({
       password: adminSessionPassword || ADMIN_PASSWORD,
       rules: normalizedRules,
+      settings: normalizedSettings,
     }),
   });
 
   const savedRules = normalizeTimerRules(payload?.rules);
-  if (!savedRules) return { saved: false, reason: payload?.error || "api-unavailable" };
+  const savedSettings = normalizeSiteSettings(payload?.settings);
+  if (!savedRules || !savedSettings) return { saved: false, reason: payload?.error || "api-unavailable" };
 
-  return { saved: true, rules: savedRules };
+  return { saved: true, rules: savedRules, settings: savedSettings };
 }
 
 function setAdminStatus(message) {
@@ -311,6 +366,9 @@ function updateAdminForm() {
   adminInputs.openSlots.value = CONFIG.openSlots;
   adminInputs.totalSlots.value = CONFIG.totalSlots;
   adminInputs.timerEpoch.value = toLocalDateTimeValue(CONFIG.timerEpochMs);
+  if (adminInputs.paymentUrl) {
+    adminInputs.paymentUrl.value = CONFIG.unlockUrl;
+  }
   updateAdminModeStatus();
   updateGeneratedLink();
 }
@@ -334,17 +392,35 @@ function applyTimerRules(rules) {
   return true;
 }
 
+function applySiteSettings(settings) {
+  const normalizedSettings = normalizeSiteSettings(settings);
+  if (!normalizedSettings) return false;
+
+  Object.assign(CONFIG, normalizedSettings);
+  updateAdminForm();
+  return true;
+}
+
 async function applyStoreAndPublishTimerRules(rules, successMessage, failureMessage) {
+  const pendingSettings = adminInputs.paymentUrl ? readAdminFormSettings() : getCurrentSiteSettings();
+  if (!pendingSettings) {
+    setAdminStatus("Bitte gültigen Zahlungslink eintragen.");
+    return { applied: false, saved: false, reason: "invalid-payment-link" };
+  }
+
   if (!applyTimerRules(rules)) {
     setAdminStatus("Bitte gültige Werte eintragen.");
     return { applied: false, saved: false, reason: "invalid" };
   }
 
+  applySiteSettings(pendingSettings);
   const currentRules = getCurrentTimerRules();
+  const currentSettings = getCurrentSiteSettings();
   storeAdminRules(currentRules);
+  storeAdminSettings(currentSettings);
   setAdminStatus("Speichere live...");
 
-  const result = await publishGlobalRules(currentRules);
+  const result = await publishGlobalConfig(currentRules, currentSettings);
   if (!result.saved) {
     setAdminStatus(
       failureMessage ||
@@ -354,9 +430,45 @@ async function applyStoreAndPublishTimerRules(rules, successMessage, failureMess
   }
 
   applyTimerRules(result.rules);
+  applySiteSettings(result.settings);
   storeAdminRules(result.rules);
+  storeAdminSettings(result.settings);
   setAdminStatus(successMessage);
-  return { applied: true, saved: true, rules: result.rules };
+  return { applied: true, saved: true, rules: result.rules, settings: result.settings };
+}
+
+async function applyStoreAndPublishAdminConfig(rules, settings, successMessage, failureMessage) {
+  if (!applyTimerRules(rules)) {
+    setAdminStatus("Bitte gültige Werte eintragen.");
+    return { applied: false, saved: false, reason: "invalid-rules" };
+  }
+
+  if (!applySiteSettings(settings)) {
+    setAdminStatus("Bitte gültigen Zahlungslink eintragen.");
+    return { applied: false, saved: false, reason: "invalid-payment-link" };
+  }
+
+  const currentRules = getCurrentTimerRules();
+  const currentSettings = getCurrentSiteSettings();
+  storeAdminRules(currentRules);
+  storeAdminSettings(currentSettings);
+  setAdminStatus("Speichere live...");
+
+  const result = await publishGlobalConfig(currentRules, currentSettings);
+  if (!result.saved) {
+    setAdminStatus(
+      failureMessage ||
+        "Auf diesem Gerät gespeichert, aber live noch nicht übernommen. Bitte nochmal versuchen."
+    );
+    return { applied: true, saved: false, reason: result.reason };
+  }
+
+  applyTimerRules(result.rules);
+  applySiteSettings(result.settings);
+  storeAdminRules(result.rules);
+  storeAdminSettings(result.settings);
+  setAdminStatus(successMessage);
+  return { applied: true, saved: true, rules: result.rules, settings: result.settings };
 }
 
 function fallbackCopyText(value) {
@@ -655,13 +767,15 @@ function setupAdminPanel() {
   adminForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const rules = readAdminFormRules();
-    if (!rules) {
-      setAdminStatus("Bitte gültige Werte eintragen.");
+    const settings = readAdminFormSettings();
+    if (!rules || !settings) {
+      setAdminStatus(!settings ? "Bitte gültigen Zahlungslink eintragen." : "Bitte gültige Werte eintragen.");
       return;
     }
 
-    await applyStoreAndPublishTimerRules(
+    await applyStoreAndPublishAdminConfig(
       rules,
+      settings,
       "Gespeichert. Die Hauptseite ist aktualisiert.",
       "Lokal gespeichert, aber live noch nicht übernommen. Bitte nochmal versuchen."
     );
@@ -710,6 +824,7 @@ function setupAdminPanel() {
   adminReset?.addEventListener("click", async () => {
     try {
       window.localStorage.removeItem(ADMIN_STORAGE_KEY);
+      window.localStorage.removeItem(ADMIN_SETTINGS_STORAGE_KEY);
     } catch {
       // Ignore storage failures; reset still works for the current page.
     }
@@ -741,11 +856,16 @@ function setupAdminPanel() {
 
 async function initializePage() {
   const campaignRules = readCampaignRules();
-  const globalRules = campaignRules ? null : await readGlobalRules();
-  const initialRules = campaignRules || globalRules || readStoredAdminRules();
+  const globalConfig = await readGlobalConfig();
+  const initialRules = campaignRules || globalConfig.rules || readStoredAdminRules();
+  const initialSettings = globalConfig.settings || readStoredAdminSettings();
 
   if (initialRules) {
     applyTimerRules(initialRules);
+  }
+
+  if (initialSettings) {
+    applySiteSettings(initialSettings);
   }
 
   Object.entries(CONFIG).forEach(([key, value]) => setText(key, value));

@@ -16,6 +16,10 @@ const DEFAULT_RULES = Object.freeze({
   manualLock: false,
 });
 
+const DEFAULT_SETTINGS = Object.freeze({
+  unlockUrl: "https://buy.stripe.com/8x2dRb0Pz54AgHi6smasg02",
+});
+
 const MIME_TYPES = {
   ".css": "text/css; charset=utf-8",
   ".html": "text/html; charset=utf-8",
@@ -58,6 +62,22 @@ function normalizeRules(rawRules) {
   };
 }
 
+function normalizeSettings(rawSettings) {
+  const unlockUrl = typeof rawSettings?.unlockUrl === "string" ? rawSettings.unlockUrl.trim() : "";
+  if (!isValidPaymentUrl(unlockUrl)) return null;
+
+  return { unlockUrl };
+}
+
+function isValidPaymentUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && Boolean(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 function resolveDataDir() {
   const candidates = [
     process.env.DATA_DIR,
@@ -84,9 +104,11 @@ function readConfigRecord() {
   try {
     const record = JSON.parse(fs.readFileSync(CONFIG_FILE, "utf8"));
     const rules = normalizeRules(record.rules);
+    const settings = normalizeSettings(record.settings) || { ...DEFAULT_SETTINGS };
     if (rules) {
       return {
         rules,
+        settings,
         updatedAt: record.updatedAt || null,
       };
     }
@@ -96,16 +118,19 @@ function readConfigRecord() {
 
   return {
     rules: { ...DEFAULT_RULES },
+    settings: { ...DEFAULT_SETTINGS },
     updatedAt: null,
   };
 }
 
-function writeConfigRecord(rules) {
+function writeConfigRecord(rules, settings) {
   const normalizedRules = normalizeRules(rules);
-  if (!normalizedRules) return null;
+  const normalizedSettings = normalizeSettings(settings);
+  if (!normalizedRules || !normalizedSettings) return null;
 
   const record = {
     rules: normalizedRules,
+    settings: normalizedSettings,
     updatedAt: new Date().toISOString(),
   };
 
@@ -193,9 +218,10 @@ async function handleConfigApi(request, response) {
     return;
   }
 
-  const record = writeConfigRecord(payload.rules);
+  const currentRecord = readConfigRecord();
+  const record = writeConfigRecord(payload.rules, payload.settings || currentRecord.settings);
   if (!record) {
-    sendJson(response, 400, { error: "invalid_rules" });
+    sendJson(response, 400, { error: "invalid_config" });
     return;
   }
 
