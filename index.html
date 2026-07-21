@@ -9,6 +9,16 @@
       content="Janes private Snap Story mit Videos, Bildern und privatem Story-Zugang."
     />
     <link rel="canonical" href="https://jane-snap-private-story.onrender.com/" />
+    <script>
+      (() => {
+        const canonicalHost = "jane-snap-private-story.onrender.com";
+        const host = window.location.hostname;
+
+        if (host.endsWith(".onrender.com") && host.startsWith("jane-") && host !== canonicalHost) {
+          window.location.replace(`https://${canonicalHost}${window.location.pathname}${window.location.search}${window.location.hash}`);
+        }
+      })();
+    </script>
     <meta property="og:locale" content="de_CH" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Jane Snap Private Story" />
