@@ -6,7 +6,7 @@ const DEFAULT_CONFIG = Object.freeze({
   videos: 8,
   price: "CHF 36.-",
   oldPrice: "",
-  unlockUrl: "",
+  unlockUrl: "https://codewort-zugang.onrender.com/",
   offerDurationMs: 3 * 60 * 1000,
   lockDurationMs: 3 * 60 * 1000,
   timerEpochMs: Date.UTC(2026, 6, 15, 0, 0, 0),

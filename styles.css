@@ -453,11 +453,25 @@ h1 {
 }
 
 .cta-note {
-  max-width: 170px;
+  max-width: 230px;
   margin: 0;
   color: var(--muted);
   font-weight: 800;
   line-height: 1.35;
+}
+
+.cta-note strong {
+  display: inline-grid;
+  min-width: 58px;
+  min-height: 28px;
+  place-items: center;
+  margin-left: 4px;
+  border: 2px solid var(--ink);
+  border-radius: 9px;
+  background: var(--snap);
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 950;
 }
 
 .waitlist-card {

@@ -17,7 +17,7 @@ const DEFAULT_RULES = Object.freeze({
 });
 
 const DEFAULT_SETTINGS = Object.freeze({
-  unlockUrl: "",
+  unlockUrl: "https://codewort-zugang.onrender.com/",
 });
 
 const MIME_TYPES = {
@@ -143,6 +143,7 @@ function sendJson(response, statusCode, payload) {
   response.writeHead(statusCode, {
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "no-store",
+    "Referrer-Policy": "no-referrer",
   });
   response.end(JSON.stringify(payload));
 }
@@ -257,6 +258,7 @@ function serveStatic(request, response) {
   response.writeHead(200, {
     "Content-Type": MIME_TYPES[ext] || "application/octet-stream",
     "Cache-Control": ext === ".html" ? "no-store" : "public, max-age=300",
+    "Referrer-Policy": "no-referrer",
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
   });
